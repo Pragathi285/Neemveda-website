@@ -1,0 +1,120 @@
+---
+page: checkout
+title: Checkout | neemveda
+description: Secure checkout for neemveda Natural Neem Sticks. Pay with UPI, cards or netbanking.
+noindex: true
+---
+<section class="page-hero" aria-labelledby="checkout-title" style="padding-bottom:28px">
+  <div class="container">
+    <nav class="breadcrumbs" aria-label="Breadcrumb"><ol style="justify-content:center"><li><a href="/">Home</a></li><li><a href="/cart.html">Cart</a></li><li aria-current="page">Checkout</li></ol></nav>
+    <h1 id="checkout-title" data-checkout-heading>Checkout</h1>
+  </div>
+</section>
+
+<div class="container" data-checkout-root>
+  <noscript><div class="card empty"><p>Please enable JavaScript to check out, or order directly on <a href="https://wa.me/{{site.whatsapp}}">WhatsApp</a>.</p></div></noscript>
+  <div class="checkout-layout">
+    <form class="checkout-form" data-checkout-form novalidate>
+      <section class="card checkout-step" aria-labelledby="step-contact">
+        <h2 id="step-contact"><span class="checkout-step__num" aria-hidden="true">1</span>Contact details</h2>
+        <div class="form-grid form-grid--2">
+          <div class="field field--full">
+            <label for="co-name">Full name</label>
+            <input class="input" id="co-name" name="name" autocomplete="name" required>
+            <p class="error" aria-live="polite"></p>
+          </div>
+          <div class="field">
+            <label for="co-phone">Mobile number</label>
+            <input class="input" id="co-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel-national" placeholder="10-digit mobile" required aria-describedby="co-phone-hint">
+            <p class="hint" id="co-phone-hint">For delivery updates on SMS / WhatsApp</p>
+            <p class="error" aria-live="polite"></p>
+          </div>
+          <div class="field">
+            <label for="co-email">Email</label>
+            <input class="input" id="co-email" name="email" type="email" inputmode="email" autocomplete="email" required>
+            <p class="error" aria-live="polite"></p>
+          </div>
+        </div>
+      </section>
+
+      <section class="card checkout-step" aria-labelledby="step-address">
+        <h2 id="step-address"><span class="checkout-step__num" aria-hidden="true">2</span>Delivery address</h2>
+        <div class="form-grid form-grid--2">
+          <div class="field field--full">
+            <label for="co-address1">House no., building, street</label>
+            <input class="input" id="co-address1" name="address1" autocomplete="address-line1" required>
+            <p class="error" aria-live="polite"></p>
+          </div>
+          <div class="field field--full">
+            <label for="co-address2">Area, landmark <span class="muted" style="text-transform:none;letter-spacing:0">(optional)</span></label>
+            <input class="input" id="co-address2" name="address2" autocomplete="address-line2">
+          </div>
+          <div class="field">
+            <label for="co-city">City / Town</label>
+            <input class="input" id="co-city" name="city" autocomplete="address-level2" required>
+            <p class="error" aria-live="polite"></p>
+          </div>
+          <div class="field">
+            <label for="co-pincode">PIN code</label>
+            <input class="input" id="co-pincode" name="pincode" inputmode="numeric" autocomplete="postal-code" maxlength="6" pattern="[1-9][0-9]{5}" required>
+            <p class="error" aria-live="polite"></p>
+          </div>
+          <div class="field field--full">
+            <label for="co-state">State / Union territory</label>
+            <select class="select" id="co-state" name="state" autocomplete="address-level1" required>
+              <option value="">Select your state</option>
+              <option>Andaman and Nicobar Islands</option><option>Andhra Pradesh</option><option>Arunachal Pradesh</option>
+              <option>Assam</option><option>Bihar</option><option>Chandigarh</option><option>Chhattisgarh</option>
+              <option>Dadra and Nagar Haveli and Daman and Diu</option><option>Delhi</option><option>Goa</option>
+              <option>Gujarat</option><option>Haryana</option><option>Himachal Pradesh</option><option>Jammu and Kashmir</option>
+              <option>Jharkhand</option><option>Karnataka</option><option>Kerala</option><option>Ladakh</option>
+              <option>Lakshadweep</option><option>Madhya Pradesh</option><option>Maharashtra</option><option>Manipur</option>
+              <option>Meghalaya</option><option>Mizoram</option><option>Nagaland</option><option>Odisha</option>
+              <option>Puducherry</option><option>Punjab</option><option>Rajasthan</option><option>Sikkim</option>
+              <option>Tamil Nadu</option><option>Telangana</option><option>Tripura</option><option>Uttar Pradesh</option>
+              <option>Uttarakhand</option><option>West Bengal</option>
+            </select>
+            <p class="error" aria-live="polite"></p>
+          </div>
+        </div>
+      </section>
+
+      <section class="card checkout-step" aria-labelledby="step-pay">
+        <h2 id="step-pay"><span class="checkout-step__num" aria-hidden="true">3</span>Payment</h2>
+        <fieldset class="field">
+          <legend class="sr-only">Payment method</legend>
+          <label class="choice">
+            <input type="radio" name="payment" value="upi" checked>
+            <span><strong>UPI</strong><span>Google Pay, PhonePe, Paytm, BHIM or any UPI app</span></span>
+          </label>
+          <label class="choice">
+            <input type="radio" name="payment" value="razorpay">
+            <span><strong>Cards, Netbanking &amp; Wallets</strong><span>Secured by Razorpay</span>
+              <span class="pay-logos" aria-hidden="true"><span>VISA</span><span>MASTERCARD</span><span>RUPAY</span><span>NETBANKING</span></span></span>
+          </label>
+          <label class="choice" data-pay-cod>
+            <input type="radio" name="payment" value="cod">
+            <span><strong>Cash on Delivery</strong><span>Pay when your order arrives <span class="placeholder">[PLACEHOLDER]</span> confirm COD availability / fee</span></span>
+          </label>
+          <p class="error" aria-live="polite"></p>
+        </fieldset>
+        <p class="notice"><svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg>
+          <span>For UPI and card payments, a secure Razorpay window opens after you place your order. We never see your card or UPI PIN.</span></p>
+      </section>
+
+      <div class="checkout-submit" style="margin-top:18px">
+        <div data-checkout-note></div>
+        <button class="btn btn-primary btn-block" type="submit"><svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg>Place order securely</button>
+        <p class="form-msg center" data-checkout-status role="status" aria-live="polite" style="margin-top:10px"></p>
+        <p class="center muted" style="font-size:.85rem">By placing your order you agree to our <a href="/shipping-policy.html">shipping</a>, <a href="/refund-policy.html">refund</a> and <a href="/privacy-policy.html">privacy</a> policies.</p>
+      </div>
+    </form>
+
+    <aside class="card summary" aria-labelledby="co-summary-title">
+      <h2 id="co-summary-title">Your order</h2>
+      <div data-checkout-summary></div>
+      <a class="link-arrow" href="/cart.html">Edit cart <svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></a>
+      <p class="summary__secure"><svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg>Payments processed securely by Razorpay</p>
+    </aside>
+  </div>
+</div>

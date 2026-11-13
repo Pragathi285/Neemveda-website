@@ -1,0 +1,40 @@
+<header class="site-header" data-header>
+  <div class="container site-header__inner">
+    <button class="icon-btn nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav" data-nav-toggle>
+      <svg class="icon icon--open" aria-hidden="true"><use href="#i-menu"/></svg>
+      <svg class="icon icon--close" aria-hidden="true"><use href="#i-close"/></svg>
+      <span class="sr-only" data-nav-label>Open menu</span>
+    </button>
+
+    <a class="logo" href="/" aria-label="neemveda, Natural Oral Care: home">
+      <svg class="logo__mark" aria-hidden="true"><use href="#i-logo"/></svg>
+      <span class="logo__text" aria-hidden="true">
+        <span class="logo__word">neemveda</span>
+        <span class="logo__tag">Natural Oral Care</span>
+      </span>
+    </a>
+
+    <nav id="site-nav" class="site-nav" aria-label="Main" data-site-nav>
+      <ul class="site-nav__list">
+        <li><a href="/" data-nav="home">Home</a></li>
+        <li><a href="/shop.html" data-nav="shop">Shop</a></li>
+        <li><a href="/#why-neem">Why Neem</a></li>
+        <li><a href="/#how-to-use">How to Use</a></li>
+        <li><a href="/about.html" data-nav="about">About</a></li>
+        <li><a href="/contact.html" data-nav="contact">Contact</a></li>
+      </ul>
+      <div class="site-nav__extra">
+        <a class="btn btn-primary btn-block" href="{{featured.url}}">Shop Neem Sticks</a>
+        <a class="site-nav__wa" href="https://wa.me/{{site.whatsapp}}" target="_blank" rel="noopener">
+          <svg class="icon" aria-hidden="true"><use href="#i-whatsapp"/></svg> Chat on WhatsApp
+        </a>
+      </div>
+    </nav>
+
+    <a class="icon-btn cart-link" href="/cart.html" data-cart-link data-nav="cart">
+      <svg class="icon" aria-hidden="true"><use href="#i-bag"/></svg>
+      <span class="sr-only" data-cart-label>Cart</span>
+      <span class="cart-count" data-cart-count aria-hidden="true">0</span>
+    </a>
+  </div>
+</header>

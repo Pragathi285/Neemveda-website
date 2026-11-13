@@ -1,0 +1,119 @@
+---
+page: shop
+title: {{product.fullName}} | neemveda
+description: {{product.short}} Chemical-free, plastic-free neem twig toothbrush (datun). Shop online across India.
+ogImage: /assets/img/og-image.png
+ogType: product
+---
+<div class="container">
+  <nav class="breadcrumbs" aria-label="Breadcrumb" style="padding-top:24px;margin:0">
+    <ol><li><a href="/">Home</a></li><li><a href="/shop.html">Shop</a></li><li aria-current="page">{{product.name}}</li></ol>
+  </nav>
+
+  <div class="pdp" data-product="{{product.id}}">
+    <div class="gallery">
+      <div class="gallery__main">
+        <img class="is-box" src="{{product.image}}" width="420" height="520" fetchpriority="high" decoding="async"
+             alt="neemveda Natural Neem Stick box, pack of {{product.count}}" data-gallery-main>
+      </div>
+      <ul class="gallery__thumbs" aria-label="Product images">
+        <li><button type="button" aria-pressed="true" data-gallery-thumb data-box data-src="{{product.image}}" data-alt="neemveda Natural Neem Stick box, pack of {{product.count}}">
+          <img src="{{product.image}}" alt="" width="84" height="104" loading="lazy"><span class="sr-only">Show product box</span></button></li>
+        <li><button type="button" aria-pressed="false" data-gallery-thumb data-src="/assets/img/hero.svg" data-alt="Neem sticks tied with jute twine on a stone slab, with fresh neem leaves">
+          <img src="/assets/img/hero.svg" alt="" width="84" height="84" loading="lazy"><span class="sr-only">Show neem sticks on stone</span></button></li>
+        <li><button type="button" aria-pressed="false" data-gallery-thumb data-src="/assets/img/leaves.svg" data-alt="Fresh neem leaves and neem twigs">
+          <img src="/assets/img/leaves.svg" alt="" width="84" height="84" loading="lazy"><span class="sr-only">Show neem leaves and twigs</span></button></li>
+      </ul>
+    </div>
+
+    <div class="pdp__info">
+      <p class="eyebrow">{{product.badge}}</p>
+      <h1 class="pdp__title">{{product.fullName}}</h1>
+      <p class="feature__pack">Pack of {{product.count}} Neem Sticks</p>
+      <p class="price price--lg">{{product.priceDisplay}} {{{product.mrpHtml}}} {{{product.priceTag}}}</p>
+      <p class="price-note">Inclusive of all taxes. Free shipping on orders of {{shippingFreeAbove}} and above.</p>
+      <p class="pdp__short">{{product.short}}</p>
+
+      <div data-available="{{product.available}}">
+        <div class="buy-box" data-buy-box>
+          <div class="qty" data-qty>
+            <button type="button" data-qty-dec aria-label="Decrease quantity"><svg class="icon" aria-hidden="true"><use href="#i-minus"/></svg></button>
+            <input type="number" name="qty" inputmode="numeric" min="1" max="20" value="1" aria-label="Quantity">
+            <button type="button" data-qty-inc aria-label="Increase quantity"><svg class="icon" aria-hidden="true"><use href="#i-plus"/></svg></button>
+          </div>
+          <div class="buy-box__row">
+            <button class="btn btn-outline" type="button" data-add-to-cart="{{product.id}}">Add to Cart</button>
+            <button class="btn btn-primary" type="button" data-buy-now="{{product.id}}">Buy Now</button>
+          </div>
+        </div>
+        <div class="notice" data-coming-soon>
+          <svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg>
+          <p>This pack is coming soon. Join our newsletter below to hear when it's available, or try our <a href="/shop.html">pack of 10</a> today.</p>
+        </div>
+      </div>
+
+      <ul class="benefits">
+        <li><span class="benefit-icon"><svg class="icon" aria-hidden="true"><use href="#i-tooth"/></svg></span>
+          <span><strong>Supports Stronger Teeth</strong><span>Helps keep teeth clean as part of your daily routine.</span></span></li>
+        <li><span class="benefit-icon"><svg class="icon" aria-hidden="true"><use href="#i-heart"/></svg></span>
+          <span><strong>Helps Keep Gums Healthy</strong><span>Soft natural bristles are gentle on gums.</span></span></li>
+        <li><span class="benefit-icon"><svg class="icon" aria-hidden="true"><use href="#i-wind"/></svg></span>
+          <span><strong>Promotes Fresh Breath</strong><span>Neem naturally freshens your mouth.</span></span></li>
+      </ul>
+      <ul class="assurances">
+        <li><svg class="icon" aria-hidden="true"><use href="#i-flask-off"/></svg>Chemical free</li>
+        <li><svg class="icon" aria-hidden="true"><use href="#i-plastic-off"/></svg>Plastic free</li>
+        <li><svg class="icon" aria-hidden="true"><use href="#i-truck"/></svg>Ships across India</li>
+      </ul>
+
+      <div class="faq tabs">
+        <details open>
+          <summary>Description<svg class="icon" aria-hidden="true"><use href="#i-chevron"/></svg></summary>
+          <div class="faq__body"><p>{{product.description}}</p></div>
+        </details>
+        <details>
+          <summary>What's inside<svg class="icon" aria-hidden="true"><use href="#i-chevron"/></svg></summary>
+          <div class="faq__body">
+            <ul class="spec-list">
+              <li><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg><span>{{product.count}} natural neem twigs (<em>Azadirachta indica</em>). Nothing else.</span></li>
+              <li><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg><span>Approx. length per stick: <span class="placeholder">[PLACEHOLDER]</span> cm</span></li>
+              <li><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg><span>Tied with natural jute twine, packed in a recyclable paper box</span></li>
+              <li><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg><span>Best used within <span class="placeholder">[PLACEHOLDER]</span> months of opening</span></li>
+            </ul>
+          </div>
+        </details>
+        <details>
+          <summary>How to use<svg class="icon" aria-hidden="true"><use href="#i-chevron"/></svg></summary>
+          <div class="faq__body">
+            <ol style="padding-left:1.2em">
+              <li>Rinse the stick under clean running water.</li>
+              <li>Chew one end gently until soft bristles form.</li>
+              <li>Brush teeth and along the gums in soft, circular strokes, then rinse your mouth.</li>
+              <li>After a few days, trim off the used end and chew a fresh one.</li>
+            </ol>
+          </div>
+        </details>
+        <details>
+          <summary>Shipping &amp; returns<svg class="icon" aria-hidden="true"><use href="#i-chevron"/></svg></summary>
+          <div class="faq__body"><p>Dispatched within {{site.shipping.dispatchDays}} working days; delivered in {{site.shipping.deliveryDays}} working days across India. For hygiene reasons, opened packs can't be returned, but if your order arrives damaged, we'll make it right. Read our <a href="/shipping-policy.html">shipping</a> and <a href="/refund-policy.html">refund</a> policies.</p></div>
+        </details>
+      </div>
+    </div>
+  </div>
+</div>
+
+<section class="section section--white" aria-labelledby="related-title">
+  <div class="container">
+    <div class="section-head reveal">
+      <p class="eyebrow">More from neemveda</p>
+      <h2 id="related-title">You may also like</h2>
+    </div>
+    <div class="product-grid">
+{{{relatedGrid}}}
+    </div>
+  </div>
+</section>
+
+<script type="application/ld+json">
+{{{product.jsonLd}}}
+</script>

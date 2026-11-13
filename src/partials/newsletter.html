@@ -1,0 +1,16 @@
+<section class="newsletter section--dark" aria-labelledby="newsletter-title">
+  <svg class="newsletter__leaf" aria-hidden="true"><use href="#i-neem-leaf"/></svg>
+  <div class="container newsletter__inner reveal">
+    <div>
+      <p class="eyebrow eyebrow--light">Join the neemveda circle</p>
+      <h2 id="newsletter-title" class="newsletter__title">Simple rituals, delivered gently.</h2>
+      <p class="newsletter__text">Occasional notes on natural oral care, new packs and member-only offers. No spam, ever.</p>
+    </div>
+    <form class="newsletter__form" data-newsletter novalidate>
+      <label class="sr-only" for="nl-email-{{page.id}}">Email address</label>
+      <input id="nl-email-{{page.id}}" class="input input--on-dark" type="email" name="email" autocomplete="email" inputmode="email" placeholder="Your email address" required>
+      <button class="btn btn-light" type="submit">Subscribe</button>
+      <p class="form-msg" data-form-msg role="status" aria-live="polite"></p>
+    </form>
+  </div>
+</section>

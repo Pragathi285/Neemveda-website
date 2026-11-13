@@ -1,0 +1,135 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" role="img" aria-labelledby="t">
+  <title id="t">Neem sticks tied with jute twine on a stone slab, with fresh neem leaves</title>
+  <defs>
+    <radialGradient id="bg" cx="62%" cy="28%" r="85%">
+      <stop offset="0" stop-color="#4f7349"/>
+      <stop offset=".5" stop-color="#2F4F2F"/>
+      <stop offset="1" stop-color="#1a2d1a"/>
+    </radialGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#f6e8c3" stop-opacity=".28"/>
+      <stop offset="1" stop-color="#f6e8c3" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="stoneTop" x1="0" y1="0" x2=".3" y2="1">
+      <stop offset="0" stop-color="#c3bdb0"/>
+      <stop offset=".6" stop-color="#a39d91"/>
+      <stop offset="1" stop-color="#8c867a"/>
+    </linearGradient>
+    <linearGradient id="stoneSide" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#76716a"/>
+      <stop offset="1" stop-color="#4a4741"/>
+    </linearGradient>
+    <linearGradient id="bark" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ad9372"/>
+      <stop offset=".42" stop-color="#836a4d"/>
+      <stop offset="1" stop-color="#4d3c2a"/>
+    </linearGradient>
+    <radialGradient id="cut" cx="45%" cy="45%" r="60%">
+      <stop offset="0" stop-color="#f2e4bf"/>
+      <stop offset=".65" stop-color="#dcc597"/>
+      <stop offset="1" stop-color="#a98b5f"/>
+    </radialGradient>
+    <linearGradient id="leafA" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8db06a"/>
+      <stop offset="1" stop-color="#4f7741"/>
+    </linearGradient>
+    <linearGradient id="leafB" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#5f8a4b"/>
+      <stop offset="1" stop-color="#9cbd75"/>
+    </linearGradient>
+    <pattern id="twist" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(38)">
+      <rect width="7" height="7" fill="#cfae78"/>
+      <rect width="2.6" height="7" fill="#a5834e"/>
+    </pattern>
+    <filter id="blur8" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="9"/></filter>
+    <filter id="blur2" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="2.2"/></filter>
+
+    <g id="lf">
+      <path d="M0 0C10-9 28-11 44-3 31 3 13 5 0 0Z"/>
+      <path d="M3 0C15-3 29-4.5 41-3" fill="none" stroke="#24401f" stroke-opacity=".35" stroke-width=".9"/>
+    </g>
+    <g id="leaf">
+      <path d="M0 50C60 48 130 46 214 38" fill="none" stroke="#6d8a50" stroke-width="2.6" stroke-linecap="round"/>
+      <use href="#lf" fill="url(#leafA)" transform="translate(26 49.5) rotate(-42) scale(.85)"/>
+      <use href="#lf" fill="url(#leafB)" transform="translate(36 49.3) rotate(42) scale(.85 -.85)"/>
+      <use href="#lf" fill="url(#leafB)" transform="translate(56 48.8) rotate(-38) scale(.95)"/>
+      <use href="#lf" fill="url(#leafA)" transform="translate(68 48.5) rotate(38) scale(.95 -.95)"/>
+      <use href="#lf" fill="url(#leafA)" transform="translate(88 47.6) rotate(-36) scale(1.05)"/>
+      <use href="#lf" fill="url(#leafB)" transform="translate(100 47.2) rotate(36) scale(1.05 -1.05)"/>
+      <use href="#lf" fill="url(#leafB)" transform="translate(120 46.3) rotate(-33) scale(1.05)"/>
+      <use href="#lf" fill="url(#leafA)" transform="translate(132 45.7) rotate(33) scale(1.05 -1.05)"/>
+      <use href="#lf" fill="url(#leafA)" transform="translate(152 44.2) rotate(-30) scale(.98)"/>
+      <use href="#lf" fill="url(#leafB)" transform="translate(164 43.4) rotate(30) scale(.98 -.98)"/>
+      <use href="#lf" fill="url(#leafB)" transform="translate(182 41.6) rotate(-26) scale(.88)"/>
+      <use href="#lf" fill="url(#leafA)" transform="translate(192 40.8) rotate(26) scale(.88 -.88)"/>
+      <use href="#lf" fill="url(#leafA)" transform="translate(206 39) rotate(-6) scale(.95)"/>
+    </g>
+    <g id="twig">
+      <rect x="0" y="0" width="353" height="24" rx="7" fill="url(#bark)"/>
+      <path d="M14 6.5H336" stroke="#cbb08a" stroke-width="2.4" stroke-linecap="round" opacity=".5"/>
+      <path d="M48 17h34M140 15.5h20M214 18h44M292 16h22" stroke="#3a2c1e" stroke-width="1.3" stroke-linecap="round" opacity=".45"/>
+      <ellipse cx="118" cy="18" rx="4.5" ry="2.2" fill="#3f2f20" opacity=".55"/>
+      <ellipse cx="262" cy="9" rx="3.5" ry="1.8" fill="#3f2f20" opacity=".45"/>
+      <ellipse cx="353" cy="12" rx="6.5" ry="12" fill="url(#cut)"/>
+      <ellipse cx="353" cy="12" rx="3" ry="5.6" fill="none" stroke="#b0915f" stroke-width=".9" opacity=".8"/>
+    </g>
+  </defs>
+
+  <rect width="640" height="640" fill="url(#bg)"/>
+  <circle cx="440" cy="190" r="260" fill="url(#glow)"/>
+
+  <!-- background sprig, softly out of focus -->
+  <g filter="url(#blur2)" opacity=".55">
+    <use href="#leaf" transform="translate(408 40) rotate(38) scale(1.05)"/>
+  </g>
+
+  <!-- leaf behind the stone -->
+  <use href="#leaf" transform="translate(18 318) rotate(-30) scale(1.55)"/>
+
+  <!-- stone slab -->
+  <path d="M58 474c-6 34 30 60 98 72 82 15 210 17 300 6 82-10 136-30 128-64l-6-26H64Z" fill="url(#stoneSide)"/>
+  <path d="M64 452c-10-34 44-62 132-74 92-12 214-12 300 2 78 13 120 38 112 70-8 30-64 52-150 60-92 9-216 6-296-10-58-12-90-28-98-48Z" fill="url(#stoneTop)"/>
+  <g fill="#6f6a61" opacity=".35">
+    <circle cx="150" cy="430" r="2"/><circle cx="212" cy="470" r="1.6"/><circle cx="290" cy="410" r="1.4"/>
+    <circle cx="372" cy="492" r="2.2"/><circle cx="452" cy="430" r="1.5"/><circle cx="520" cy="470" r="1.8"/>
+    <circle cx="410" cy="402" r="1.2"/><circle cx="118" cy="462" r="1.3"/><circle cx="560" cy="440" r="1.2"/>
+  </g>
+  <path d="M96 420c60-30 180-40 270-34" fill="none" stroke="#e7e2d6" stroke-width="3" stroke-linecap="round" opacity=".35"/>
+
+  <!-- shadow of the bundle -->
+  <ellipse cx="330" cy="452" rx="196" ry="30" fill="#1f1d19" opacity=".45" filter="url(#blur8)"/>
+
+  <!-- bundle of neem sticks -->
+  <g transform="translate(140 318) rotate(-9 180 50)">
+    <use href="#twig" transform="translate(12 0) scale(.95 1)"/>
+    <use href="#twig" transform="translate(-6 19)"/>
+    <use href="#twig" transform="translate(18 38) scale(.92 1)"/>
+    <use href="#twig" transform="translate(0 57) scale(.99 1)"/>
+    <use href="#twig" transform="translate(9 76) scale(.95 1)"/>
+
+    <!-- jute twine -->
+    <g>
+      <rect x="140" y="-6" width="11" height="112" rx="5.5" fill="url(#twist)"/>
+      <rect x="153" y="-7" width="11" height="114" rx="5.5" fill="url(#twist)"/>
+      <rect x="166" y="-6" width="11" height="112" rx="5.5" fill="url(#twist)"/>
+      <path d="M140 2h37M140 98h37" stroke="#6b5130" stroke-opacity=".25" stroke-width="3"/>
+      <path d="M158-8c-10-14-30-18-46-10M162-8c12-16 34-20 52-8" fill="none" stroke="#c19f69" stroke-width="5.5" stroke-linecap="round"/>
+      <path d="M158-8c-10-14-30-18-46-10M162-8c12-16 34-20 52-8" fill="none" stroke="#8f6f41" stroke-width="1.2" stroke-dasharray="3 4" stroke-linecap="round" opacity=".7"/>
+      <ellipse cx="160" cy="-8" rx="9" ry="7" fill="#c7a56f"/>
+      <path d="M154-10c3 3 9 3 12 0" fill="none" stroke="#8f6f41" stroke-width="1.2" opacity=".8"/>
+    </g>
+  </g>
+
+  <!-- a single stick in front, one end chewed into soft bristles -->
+  <ellipse cx="290" cy="530" rx="140" ry="12" fill="#1f1d19" opacity=".35" filter="url(#blur8)"/>
+  <g transform="translate(150 500) rotate(-5)">
+    <use href="#twig" transform="scale(.74 .9)"/>
+    <g fill="none" stroke="#e1cb9b" stroke-width="1.6" stroke-linecap="round">
+      <path d="M262 4l22-9M262 7l25-4M262 10l27 1M262 13l26 5M262 16l23 9M262 19l19 11"/>
+      <path d="M262 5.5l16-12M262 18l14 13" opacity=".6"/>
+    </g>
+  </g>
+
+  <!-- leaf lying across the front edge -->
+  <use href="#leaf" transform="translate(372 600) rotate(-24) scale(1.12)"/>
+</svg>

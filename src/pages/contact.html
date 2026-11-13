@@ -1,0 +1,72 @@
+---
+page: contact
+title: Contact neemveda | WhatsApp, Email & Phone
+description: Questions about neem sticks, orders or bulk enquiries? Contact neemveda on WhatsApp, email or phone. We're happy to help.
+---
+<section class="page-hero" aria-labelledby="contact-title">
+  <svg class="deco-leaf" aria-hidden="true"><use href="#i-neem-leaf"/></svg>
+  <div class="container">
+    <nav class="breadcrumbs" aria-label="Breadcrumb"><ol style="justify-content:center"><li><a href="/">Home</a></li><li aria-current="page">Contact</li></ol></nav>
+    <p class="eyebrow">We're here to help</p>
+    <h1 id="contact-title">Get in touch</h1>
+    <p>Questions about using neem sticks, your order, or bulk and gifting enquiries? Write to us. A real person will reply.</p>
+  </div>
+</section>
+
+<div class="container contact-layout">
+  <form class="card contact-card" data-contact-form novalidate aria-labelledby="form-title">
+    <h2 id="form-title" style="font-size:1.4rem">Send us a message</h2>
+    <div class="form-grid form-grid--2">
+      <div class="field">
+        <label for="c-name">Your name</label>
+        <input class="input" id="c-name" name="name" autocomplete="name" required>
+        <p class="error" aria-live="polite"></p>
+      </div>
+      <div class="field">
+        <label for="c-email">Email</label>
+        <input class="input" id="c-email" name="email" type="email" inputmode="email" autocomplete="email" required>
+        <p class="error" aria-live="polite"></p>
+      </div>
+      <div class="field">
+        <label for="c-phone">Phone <span class="muted" style="text-transform:none;letter-spacing:0">(optional)</span></label>
+        <input class="input" id="c-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel">
+      </div>
+      <div class="field">
+        <label for="c-topic">Topic</label>
+        <select class="select" id="c-topic" name="topic">
+          <option value="">Choose a topic</option>
+          <option>Question about neem sticks</option>
+          <option>My order</option>
+          <option>Bulk or gifting enquiry</option>
+          <option>Retail / wholesale partnership</option>
+          <option>Something else</option>
+        </select>
+      </div>
+      <div class="field field--full">
+        <label for="c-message">Message</label>
+        <textarea class="textarea" id="c-message" name="message" required></textarea>
+        <p class="error" aria-live="polite"></p>
+      </div>
+    </div>
+    <div class="btn-row" style="margin-top:20px">
+      <button class="btn btn-primary" type="submit"><svg class="icon" aria-hidden="true"><use href="#i-mail"/></svg>Send message</button>
+      <button class="btn btn-wa" type="button" data-contact-wa><svg class="icon" aria-hidden="true"><use href="#i-whatsapp"/></svg>Send via WhatsApp</button>
+    </div>
+    <p class="form-msg" data-form-msg role="status" aria-live="polite" style="margin-top:14px"></p>
+  </form>
+
+  <aside class="card contact-card" aria-labelledby="direct-title">
+    <h2 id="direct-title" style="font-size:1.4rem">Reach us directly</h2>
+    <a class="btn btn-primary btn-block" href="https://wa.me/{{site.whatsapp}}?text=Hi%20neemveda%2C%20I%20have%20a%20question" target="_blank" rel="noopener">
+      <svg class="icon" aria-hidden="true"><use href="#i-whatsapp"/></svg>Chat on WhatsApp</a>
+    <ul class="contact-list">
+      <li><span class="benefit-icon"><svg class="icon" aria-hidden="true"><use href="#i-whatsapp"/></svg></span><span><strong>WhatsApp</strong><a href="https://wa.me/{{site.whatsapp}}" target="_blank" rel="noopener">{{site.whatsappDisplay}}</a></span></li>
+      <li><span class="benefit-icon"><svg class="icon" aria-hidden="true"><use href="#i-mail"/></svg></span><span><strong>Email</strong><a href="mailto:{{site.email}}">{{site.emailDisplay}}</a></span></li>
+      <li><span class="benefit-icon"><svg class="icon" aria-hidden="true"><use href="#i-phone"/></svg></span><span><strong>Phone</strong><a href="tel:{{site.phone}}">{{site.phoneDisplay}}</a></span></li>
+      <li><span class="benefit-icon"><svg class="icon" aria-hidden="true"><use href="#i-instagram"/></svg></span><span><strong>Instagram</strong><a href="{{site.instagram}}" target="_blank" rel="noopener">{{site.instagramHandle}}</a></span></li>
+      <li><span class="benefit-icon"><svg class="icon" aria-hidden="true"><use href="#i-youtube"/></svg></span><span><strong>YouTube</strong><a href="{{site.youtube}}" target="_blank" rel="noopener">{{site.youtubeName}}</a></span></li>
+      <li><span class="benefit-icon"><svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg></span><span><strong>Hours</strong><span>{{site.hours}}</span></span></li>
+      <li><span class="benefit-icon"><svg class="icon" aria-hidden="true"><use href="#i-pin"/></svg></span><span><strong>Address</strong><span>{{site.address}}</span></span></li>
+    </ul>
+  </aside>
+</div>

@@ -1,0 +1,17 @@
+{
+  "name": "neemveda-site",
+  "version": "1.0.0",
+  "private": true,
+  "description": "neemveda – Natural Oral Care: website, shop and order backend",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node server/index.js --watch",
+    "build": "node build.js"
+  },
+  "engines": {
+    "node": ">=14"
+  },
+  "dependencies": {
+    "nodemailer": "^6.9.16"
+  }
+}
