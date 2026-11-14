@@ -83,7 +83,7 @@ const formatPrice = (n) => (n == null ? '₹[XX]' : '₹' + Number(n).toLocaleSt
 
 function productCard(p) {
   const cta = p.available
-    ? `<button class="btn btn-primary btn-block" type="button" data-add-to-cart="${p.id}">Add to Cart</button>`
+    ? `<button class="btn btn-primary btn-block" type="button" data-add-to-cart="${p.id}">Add to cart</button>`
     : `<span class="btn btn-ghost btn-block is-disabled" aria-disabled="true">Coming soon</span>`;
   return `
       <article class="card product-card reveal" data-product="${p.id}">

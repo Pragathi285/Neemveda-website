@@ -375,7 +375,7 @@
         '<div class="empty__icon"><svg class="icon" aria-hidden="true"><use href="#i-bag"/></svg></div>' +
         '<h2>Your cart is empty</h2>' +
         '<p class="muted">A simple, natural start to your mornings is one click away.</p>' +
-        '<a class="btn btn-primary" href="' + u('shop.html') + '">Shop Neem Sticks</a></div>';
+        '<a class="btn btn-primary" href="' + u('shop.html') + '">Shop neem sticks</a></div>';
       return;
     }
     var t = Cart.totals();
@@ -410,8 +410,8 @@
       '</div>' +
       noteHtml(note) +
       (note && note.blocked
-        ? '<span class="btn btn-ghost btn-block is-disabled" aria-disabled="true">Proceed to Checkout</span>'
-        : '<a class="btn btn-primary btn-block" href="' + u('checkout.html') + '">Proceed to Checkout <svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></a>') +
+        ? '<span class="btn btn-ghost btn-block is-disabled" aria-disabled="true">Proceed to checkout</span>'
+        : '<a class="btn btn-primary btn-block" href="' + u('checkout.html') + '">Proceed to checkout <svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></a>') +
       '<p class="summary__secure"><svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg>Secure checkout · UPI, cards &amp; netbanking</p>' +
       '</aside></div>';
     initQty(root);
@@ -553,7 +553,7 @@
       root.innerHTML =
         '<div class="card empty"><div class="empty__icon"><svg class="icon" aria-hidden="true"><use href="#i-bag"/></svg></div>' +
         '<h2>Nothing to check out yet</h2><p class="muted">Add a pack of neem sticks to your cart to continue.</p>' +
-        '<a class="btn btn-primary" href="' + u('shop.html') + '">Shop Neem Sticks</a></div>';
+        '<a class="btn btn-primary" href="' + u('shop.html') + '">Shop neem sticks</a></div>';
       return;
     }
     renderCheckoutSummary();
