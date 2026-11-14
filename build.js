@@ -195,7 +195,7 @@ function build() {
       description: meta.description || '',
       id: meta.page || '',
       canonical: site.url + pagePath,
-      ogImage: site.url + (meta.ogImage || '/assets/img/og-image.png'),
+      ogImage: site.url + (meta.ogImage || '/assets/img/og-image.jpg'),
       ogType: meta.ogType || 'website',
       robots: meta.noindex === 'true' ? 'noindex, follow' : 'index, follow',
     };
