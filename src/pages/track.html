@@ -1,0 +1,35 @@
+---
+page: track
+title: Track your order | neemveda
+description: Check the status of your neemveda order with your order number and phone number.
+---
+<section class="page-hero" aria-labelledby="track-title">
+  <svg class="deco-leaf" aria-hidden="true"><use href="#i-neem-leaf"/></svg>
+  <div class="container">
+    <nav class="breadcrumbs" aria-label="Breadcrumb"><ol style="justify-content:center"><li><a href="/">Home</a></li><li aria-current="page">Track order</li></ol></nav>
+    <p class="eyebrow">Where is my order?</p>
+    <h1 id="track-title">Track your order</h1>
+    <p>Enter the order number from your confirmation (it starts with NV-) and the phone number you used.</p>
+  </div>
+</section>
+
+<div class="container" style="max-width:720px;padding-bottom:var(--section-y)">
+  <form class="card contact-card" data-track-form novalidate aria-label="Track order">
+    <div class="form-grid form-grid--2">
+      <div class="field">
+        <label for="t-ref">Order number</label>
+        <input class="input" id="t-ref" name="ref" autocomplete="off" placeholder="NV-261117-ABC123" required>
+        <p class="error" aria-live="polite"></p>
+      </div>
+      <div class="field">
+        <label for="t-phone">Phone number</label>
+        <input class="input" id="t-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" required>
+        <p class="error" aria-live="polite"></p>
+      </div>
+    </div>
+    <button class="btn btn-primary btn-block" type="submit" style="margin-top:14px">Check status</button>
+    <p class="form-msg center" data-track-status role="status" aria-live="polite" style="margin-top:10px"></p>
+  </form>
+  <div data-track-result style="margin-top:20px"></div>
+  <p class="center muted" style="margin-top:20px">Need help? <a href="https://wa.me/{{site.whatsapp}}?text=Hi%20neemveda%2C%20I%20have%20a%20question%20about%20my%20order" target="_blank" rel="noopener">Message us on WhatsApp</a>.</p>
+</div>

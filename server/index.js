@@ -21,6 +21,7 @@ const admin = require('./admin');
 const { priceOrder, catalog } = require('./pricing');
 const {
   HttpError, readJson, send, sendJson, rateLimit, clean, validateEmail, validateCustomer, requireField,
+  normalisePhone, safeEqual,
 } = require('./util');
 
 /* ------------------------------------------------------------------ build */
@@ -50,7 +51,7 @@ function setStatus(order, status, note) {
 }
 
 function markPaid(order, paymentId, via) {
-  if (['paid', 'shipped', 'delivered'].includes(order.status)) return false; // already done
+  if (['paid', 'packed', 'shipped', 'delivered'].includes(order.status)) return false; // already done
   order.razorpayPaymentId = paymentId;
   order.paidAt = new Date().toISOString();
   setStatus(order, 'paid', `via ${via}`);
@@ -79,6 +80,7 @@ async function createOrder(req, res) {
     payment,
     customer,
     ...pricing,
+    seen: false, // shows as NEW in the admin panel until opened
     history: [],
   };
 
@@ -137,6 +139,36 @@ async function webhook(req, res) {
   sendJson(res, 200, { ok: true });
 }
 
+/* Customer order tracking: needs the order number AND the phone number used for the order. */
+const TRACK_LABEL = {
+  awaiting_payment: 'Awaiting payment', confirmed: 'Order confirmed', paid: 'Payment received',
+  packed: 'Packed', shipped: 'Shipped', delivered: 'Delivered', cancelled: 'Cancelled',
+};
+async function trackOrder(req, res) {
+  rateLimit(req, 'track', 20, 10 * 60 * 1000);
+  const { body } = await readJson(req);
+  const ref = String(body.ref || '').trim().toUpperCase();
+  const phone = normalisePhone(body.phone);
+  const order = store.getOrder(ref);
+  if (!order || !safeEqual(order.customer.phone, phone)) {
+    throw new HttpError(404, 'We could not find an order with that order number and phone number.');
+  }
+  sendJson(res, 200, {
+    ref: order.ref,
+    createdAt: order.createdAt,
+    status: order.status,
+    statusLabel: TRACK_LABEL[order.status] || order.status,
+    payment: mailer.PAYMENT_LABEL[order.payment] || order.payment,
+    lines: order.lines.map((l) => ({ name: l.name, qty: l.qty, total: l.total })),
+    subtotal: order.subtotal,
+    shipping: order.shipping,
+    total: order.total,
+    tracking: order.tracking || '',
+    city: order.customer.city,
+    history: (order.history || []).map((h) => ({ at: h.at, status: h.status, label: TRACK_LABEL[h.status] || h.status })),
+  });
+}
+
 /* ------------------------------------------------------------------ forms */
 async function newsletter(req, res) {
   rateLimit(req, 'newsletter', 10, 10 * 60 * 1000);
@@ -190,6 +222,7 @@ function serveStatic(req, res, urlPath) {
 /* ------------------------------------------------------------------ router */
 const API = {
   'POST /api/orders': createOrder,
+  'POST /api/orders/track': trackOrder,
   'POST /api/payments/verify': verifyPayment,
   'POST /api/payments/webhook': webhook,
   'POST /api/newsletter': newsletter,
@@ -212,7 +245,7 @@ const server = http.createServer(async (req, res) => {
     const handler = API[`${req.method} ${urlPath}`];
     if (handler) return await handler(req, res);
     if (urlPath.startsWith('/api/')) throw new HttpError(404, 'Not found.');
-    if (urlPath === '/admin' || urlPath.startsWith('/admin/')) return await admin.handle(req, res, urlPath);
+    if (urlPath === '/admin' || urlPath.startsWith('/admin/')) return await admin.handle(req, res, urlPath, safeBuild);
     if (req.method !== 'GET' && req.method !== 'HEAD') return send(res, 405, 'Method not allowed');
     return serveStatic(req, res, urlPath);
   } catch (err) {

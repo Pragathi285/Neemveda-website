@@ -30,7 +30,16 @@ Check what's configured at `/api/health`. Never share `.env` or put the secret k
 1. The customer fills the checkout form. The browser sends the cart and address to `POST /api/orders`.
 2. The server recalculates prices from `src/data/products.json` (the browser's prices are never trusted), saves the order, and creates a Razorpay order.
 3. Razorpay Checkout opens. After payment, the server verifies the Razorpay signature (`/api/payments/verify`) and marks the order **Paid**. The webhook does the same if the customer closes the window early.
-4. You and the customer get an email. The order appears in `/admin`. When you mark it **Shipped** (with optional tracking), the customer is emailed.
+4. The order appears in `/admin` straight away: the panel checks every 10 seconds and plays a sound and shows a notification for each new order. If email is set up, you and the customer also get an email. When you mark it **Shipped** (with optional tracking), the customer is emailed.
+5. On the confirmation screen the customer can send the full order to your WhatsApp with one tap, and later check its status at `/track.html` with the order number and phone number.
+
+## Admin panel (`/admin`)
+
+- **Log in** with `ADMIN_USER` / `ADMIN_PASSWORD` from `.env` (you stay logged in for 7 days on that device; changing the password logs everyone out).
+- **Orders:** new-order alerts (tap “Turn on new-order alerts” once per device), search, status filter, today's orders, COD amount to collect, CSV download.
+- **Order page:** items and totals, customer contact (call / WhatsApp with ready messages), status (Confirmed → Packed → Shipped → Delivered), tracking number, private notes, history, printable packing slip.
+- **Products:** change price, MRP, stock and badge. Saved to `data/product-overrides.json` (not in git) and the site updates immediately.
+- **Newsletter** and **Messages** from the website forms.
 
 Cash on Delivery orders skip payment and are saved as **Confirmed**.
 
@@ -38,7 +47,8 @@ Cash on Delivery orders skip payment and are saved as **Confirmed**.
 
 | What | Where |
 |---|---|
-| Prices, packs, product text | `src/data/products.json` |
+| Prices, MRP, stock | Admin panel → Products (defaults in `src/data/products.json`) |
+| Pack names, product text | `src/data/products.json` |
 | Contact details, shipping rules, COD on/off | `src/data/site.json` |
 | Page content | `src/pages/*.html`, product page: `src/templates/product.html` |
 | Header / footer / newsletter | `src/partials/` |

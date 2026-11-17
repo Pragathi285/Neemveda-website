@@ -83,22 +83,22 @@ noindex: true
         <h2 id="step-pay"><span class="checkout-step__num" aria-hidden="true">3</span>Payment</h2>
         <fieldset class="field">
           <legend class="sr-only">Payment method</legend>
-          <label class="choice">
-            <input type="radio" name="payment" value="upi" checked>
+          <label class="choice" data-pay-cod>
+            <input type="radio" name="payment" value="cod" checked>
+            <span><strong>Cash on Delivery</strong><span>Pay in cash when your order arrives. No extra charge.</span></span>
+          </label>
+          <label class="choice" data-pay-online>
+            <input type="radio" name="payment" value="upi">
             <span><strong>UPI</strong><span>Google Pay, PhonePe, Paytm, BHIM or any UPI app</span></span>
           </label>
-          <label class="choice">
+          <label class="choice" data-pay-online>
             <input type="radio" name="payment" value="razorpay">
             <span><strong>Cards, Netbanking &amp; Wallets</strong><span>Secured by Razorpay</span>
               <span class="pay-logos" aria-hidden="true"><span>VISA</span><span>MASTERCARD</span><span>RUPAY</span><span>NETBANKING</span></span></span>
           </label>
-          <label class="choice" data-pay-cod>
-            <input type="radio" name="payment" value="cod">
-            <span><strong>Cash on Delivery</strong><span>Pay when your order arrives <span class="placeholder">[PLACEHOLDER]</span> confirm COD availability / fee</span></span>
-          </label>
           <p class="error" aria-live="polite"></p>
         </fieldset>
-        <p class="notice"><svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg>
+        <p class="notice" data-pay-online><svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg>
           <span>For UPI and card payments, a secure Razorpay window opens after you place your order. We never see your card or UPI PIN.</span></p>
       </section>
 
@@ -114,7 +114,7 @@ noindex: true
       <h2 id="co-summary-title">Your order</h2>
       <div data-checkout-summary></div>
       <a class="link-arrow" href="/cart.html">Edit cart <svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg></a>
-      <p class="summary__secure"><svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg>Payments processed securely by Razorpay</p>
+      <p class="summary__secure" data-pay-online><svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg>Payments processed securely by Razorpay</p>
     </aside>
   </div>
 </div>

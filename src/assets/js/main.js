@@ -480,18 +480,24 @@
 
   function showConfirmation(order, demo) {
     var root = $('[data-checkout-root]');
-    var summary = order.lines.map(function (l) { return l.qty + ' × ' + l.product.name; }).join(', ');
-    var waText = 'Hi neemveda, I just placed order ' + order.ref + ' (' + summary + ').';
+    var c = order.customer;
+    var payLabel = { cod: 'Cash on Delivery', upi: 'UPI', razorpay: 'Card / Netbanking' }[order.payment] || order.payment;
+    var waText = 'Hi neemveda, I just placed order ' + order.ref + '.\n' +
+      order.lines.map(function (l) { return '• ' + l.qty + ' × ' + l.product.name; }).join('\n') +
+      (order.total != null ? '\nTotal: ₹' + order.total : '') + '\nPayment: ' + payLabel +
+      '\nName: ' + c.name + '\nPhone: ' + c.phone +
+      '\nAddress: ' + [c.address1, c.address2, c.city, c.state + ' - ' + c.pincode].filter(Boolean).join(', ');
     root.innerHTML =
       '<div class="card confirmation" tabindex="-1" data-confirmation>' +
       '<div class="confirmation__icon"><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg></div>' +
       '<p class="eyebrow">Order ' + esc(order.ref) + '</p>' +
       '<h2>Thank you, ' + esc(order.customer.name.split(' ')[0]) + '!</h2>' +
-      '<p>Your order has been received. We will send updates to <strong>' + esc(order.customer.email) + '</strong> and on WhatsApp at <strong>' + esc(order.customer.phone) + '</strong>.</p>' +
+      '<p>Your order has been received' + (order.payment === 'cod' ? '. Please keep <strong>' + (order.total != null ? '₹' + order.total : 'the amount') + '</strong> ready to pay in cash on delivery' : '') + '. We will send updates to <strong>' + esc(order.customer.email) + '</strong> and on WhatsApp at <strong>' + esc(order.customer.phone) + '</strong>.</p>' +
+      '<p class="muted">Save your order number <strong>' + esc(order.ref) + '</strong> to <a href="' + u('track.html') + '?ref=' + encodeURIComponent(order.ref) + '">track your order</a>.</p>' +
       (demo ? '<p class="notice"><span><span class="placeholder">[PLACEHOLDER]</span> Demo mode: no payment gateway or order backend is connected yet, so no payment was taken and this order was not stored.</span></p>' : '') +
       '<div class="btn-row" style="justify-content:center">' +
       '<a class="btn btn-primary" href="' + u('shop.html') + '">Continue shopping</a>' +
-      '<a class="btn btn-wa" href="https://wa.me/' + site.whatsapp + '?text=' + encodeURIComponent(waText) + '" target="_blank" rel="noopener"><svg class="icon" aria-hidden="true"><use href="#i-whatsapp"/></svg>Message us</a>' +
+      '<a class="btn btn-wa" href="https://wa.me/' + site.whatsapp + '?text=' + encodeURIComponent(waText) + '" target="_blank" rel="noopener"><svg class="icon" aria-hidden="true"><use href="#i-whatsapp"/></svg>Send order on WhatsApp</a>' +
       '</div></div>';
     Cart.clear();
     var heading = $('[data-checkout-heading]');
@@ -563,6 +569,20 @@
       var cod = $('[data-pay-cod]');
       if (cod) cod.remove();
     }
+    // Online payment options appear only when the server has Razorpay set up.
+    var online = Array.prototype.slice.call(document.querySelectorAll('[data-pay-online]'));
+    var setOnline = function (on) {
+      online.forEach(function (el) { el.hidden = !on; var r = el.querySelector('input'); if (r) r.disabled = !on; });
+      if (!form.querySelector('input[name=payment]:checked:not(:disabled)')) {
+        var first = form.querySelector('input[name=payment]:not(:disabled)');
+        if (first) first.checked = true;
+      }
+    };
+    setOnline(false);
+    if (API) {
+      fetch(API + '/health', { cache: 'no-store' }).then(function (r) { return r.json(); })
+        .then(function (h) { setOnline(!!h.razorpay); }, function () {});
+    }
     form.addEventListener('submit', function (e) {
       e.preventDefault();
       var ok = validateForm(form, {
@@ -602,6 +622,7 @@
         payment: order.payment
       }).then(function (res) {
         order.ref = res.ref;
+        order.total = res.total;
         if (!res.razorpay) { showConfirmation(order, false); return; }
         status.textContent = 'Opening secure payment…';
         return openRazorpay(order, res.razorpay, ui);
@@ -614,6 +635,50 @@
           el.focus();
         }
       });
+    });
+  }
+
+  /* ---------------------------------------------------------------- Track order */
+  function initTrack() {
+    var form = $('[data-track-form]');
+    if (!form) return;
+    var status = $('[data-track-status]', form);
+    var out = $('[data-track-result]');
+    var params = new URLSearchParams(location.search);
+    if (params.get('ref')) form.elements.ref.value = params.get('ref');
+    var fmt = function (iso) {
+      try { return new Date(iso).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }); } catch (e) { return iso; }
+    };
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var ok = validateForm(form, {
+        ref: function (v) { return /^NV-[0-9A-Z-]{6,}$/i.test(v.trim()) ? '' : 'Please enter your order number (it starts with NV-).'; },
+        phone: rules.phone
+      });
+      if (!ok) return;
+      var btn = $('[type=submit]', form);
+      btn.disabled = true;
+      status.textContent = 'Checking…';
+      out.innerHTML = '';
+      postJSON(API + '/orders/track', { ref: form.elements.ref.value.trim(), phone: normalisePhone(form.elements.phone.value.trim()) })
+        .then(function (o) {
+          status.textContent = '';
+          out.innerHTML =
+            '<div class="card" style="padding:24px">' +
+            '<p class="eyebrow">Order ' + esc(o.ref) + '</p>' +
+            '<h2 style="margin:4px 0 6px">' + esc(o.statusLabel) + '</h2>' +
+            '<p class="muted">Placed ' + esc(fmt(o.createdAt)) + ' · ' + esc(o.payment) + ' · Delivering to ' + esc(o.city) + '</p>' +
+            (o.tracking ? '<p class="notice"><span><strong>Tracking:</strong> ' + esc(o.tracking) + '</span></p>' : '') +
+            '<ul class="summary__lines" style="margin-top:12px">' + o.lines.map(function (l) {
+              return '<li class="summary__line"><span>' + l.qty + ' × ' + esc(l.name) + '</span><span>₹' + l.total + '</span></li>';
+            }).join('') + '</ul>' +
+            '<div class="summary__rows"><div class="summary__row"><span>Shipping</span><span>' + (o.shipping ? '₹' + o.shipping : 'Free') + '</span></div>' +
+            '<div class="summary__row summary__row--total"><span>Total</span><span>₹' + o.total + '</span></div></div>' +
+            '<h3 style="margin-top:18px;font-size:1rem">Updates</h3><ul class="muted" style="padding-left:18px">' +
+            o.history.slice().reverse().map(function (h) { return '<li><strong>' + esc(h.label) + '</strong> · ' + esc(fmt(h.at)) + '</li>'; }).join('') +
+            '</ul></div>';
+        }, function (err) { status.textContent = err.message; })
+        .then(function () { btn.disabled = false; });
     });
   }
 
@@ -635,6 +700,7 @@
     initContact();
     initCartPage();
     initCheckout();
+    initTrack();
     updateCartBadge(false);
     document.addEventListener('cart:change', function () { updateCartBadge(true); renderCheckoutSummary(); });
     window.addEventListener('storage', function (e) { if (e.key === Cart.key) { updateCartBadge(false); renderCart(); } });

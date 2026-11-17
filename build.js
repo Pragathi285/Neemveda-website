@@ -14,6 +14,7 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const { readProducts } = require('./server/catalog');
 
 const ROOT = __dirname;
 const SRC = path.join(ROOT, 'src');
@@ -125,7 +126,7 @@ function productJsonLd(p, site) {
 function build() {
   const t0 = Date.now();
   const site = JSON.parse(read(path.join(SRC, 'data/site.json')));
-  const products = JSON.parse(read(path.join(SRC, 'data/products.json'))).map((p) => ({
+  const products = readProducts().map((p) => ({
     ...p,
     url: `/products/${p.slug}.html`,
     image: `/assets/img/box-${p.count}.svg`,

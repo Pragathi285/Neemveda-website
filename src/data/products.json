@@ -1,0 +1,44 @@
+[
+  {
+    "id": "neem-sticks-10",
+    "slug": "neem-sticks-pack-of-10",
+    "name": "Neem Sticks – Pack of 10",
+    "fullName": "neemveda Natural Neem Sticks (Datun) – Pack of 10",
+    "short": "Try natural neem datun. A good first pack.",
+    "description": "Hand-cut neem twigs, tied with jute twine and packed in a recyclable paper box. Chew one end into soft bristles and brush gently.",
+    "count": 10,
+    "price": 99,
+    "mrp": 149,
+    "available": true,
+    "featured": false,
+    "badge": "Starter pack"
+  },
+  {
+    "id": "neem-sticks-30",
+    "slug": "neem-sticks-pack-of-30",
+    "name": "Neem Sticks – Pack of 30",
+    "fullName": "neemveda Natural Neem Sticks (Datun) – Pack of 30",
+    "short": "A month of plastic-free brushing.",
+    "description": "Hand-cut neem twigs, tied with jute twine and packed in a recyclable paper box. Chew one end into soft bristles and brush gently.",
+    "count": 30,
+    "price": 249,
+    "mrp": 399,
+    "available": true,
+    "featured": true,
+    "badge": "Bestseller"
+  },
+  {
+    "id": "neem-sticks-60",
+    "slug": "neem-sticks-pack-of-60",
+    "name": "Neem Sticks – Pack of 60",
+    "fullName": "neemveda Natural Neem Sticks (Datun) – Pack of 60",
+    "short": "Family pack for the whole household.",
+    "description": "Hand-cut neem twigs, tied with jute twine and packed in a recyclable paper box. Chew one end into soft bristles and brush gently.",
+    "count": 60,
+    "price": 449,
+    "mrp": 699,
+    "available": true,
+    "featured": false,
+    "badge": "Family pack"
+  }
+]

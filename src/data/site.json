@@ -1,0 +1,34 @@
+{
+  "_note": "Prices in products.json are SAMPLE prices: change them in the admin panel (Products tab) before launch. Replace remaining [PLACEHOLDER] values.",
+  "name": "neemveda",
+  "legalName": "neemveda [PLACEHOLDER legal name]",
+  "tagline": "Natural Oral Care",
+  "url": "https://neemveda.indobase.in",
+  "locale": "en_IN",
+  "email": "neemveda0@gmail.com",
+  "emailDisplay": "neemveda0@gmail.com",
+  "phone": "+918248581146",
+  "phoneDisplay": "+91 82485 81146",
+  "whatsapp": "918248581146",
+  "whatsappDisplay": "+91 82485 81146",
+  "address": "[PLACEHOLDER address], India",
+  "hours": "Mon–Sat, 10am–6pm [PLACEHOLDER]",
+  "instagram": "https://www.instagram.com/neemveda_official/",
+  "instagramHandle": "@neemveda_official",
+  "youtube": "https://www.youtube.com/@Neemveda",
+  "youtubeName": "@Neemveda",
+  "shipping": {
+    "freeAbove": 499,
+    "flatRate": 50,
+    "dispatchDays": "1–2 [PLACEHOLDER]",
+    "deliveryDays": "3–7 [PLACEHOLDER]"
+  },
+  "payments": {
+    "api": "/api",
+    "cod": true
+  },
+  "forms": {
+    "newsletterEndpoint": "/api/newsletter",
+    "contactEndpoint": "/api/contact"
+  }
+}

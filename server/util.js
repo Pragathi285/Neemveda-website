@@ -112,5 +112,5 @@ const rupees = (n) => '₹' + Number(n).toLocaleString('en-IN');
 
 module.exports = {
   HttpError, readBody, readJson, send, sendJson, clientIp, rateLimit, safeEqual,
-  clean, validateEmail, validateCustomer, requireField, escapeHtml, rupees,
+  clean, validateEmail, validateCustomer, requireField, escapeHtml, rupees, normalisePhone,
 };

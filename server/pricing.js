@@ -2,15 +2,11 @@
  * Server-side pricing. Prices always come from src/data, never from the browser,
  * so nobody can change a price by editing the page.
  */
-const fs = require('fs');
-const path = require('path');
-const { ROOT } = require('./config');
 const { HttpError } = require('./util');
-
-const readJson = (rel) => JSON.parse(fs.readFileSync(path.join(ROOT, rel), 'utf8'));
+const { readSite, readProducts } = require('./catalog');
 
 function catalog() {
-  return { site: readJson('src/data/site.json'), products: readJson('src/data/products.json') };
+  return { site: readSite(), products: readProducts() };
 }
 
 function priceOrder(items) {
