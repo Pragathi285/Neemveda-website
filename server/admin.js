@@ -230,7 +230,13 @@ function ordersView(q) {
   const options = [['', 'All orders'], ['new', 'New (not opened)'], ...STATUSES.map((x) => [x, STATUS_LABEL[x]])]
     .map(([v, l]) => `<option value="${v}"${v === filter ? ' selected' : ''}>${l}</option>`).join('');
 
+  const site = catalog.readSite();
+  const tomorrow = istDate(1);
+  const dueTomorrow = all.filter((o) => o.expectedDelivery === tomorrow && ['confirmed', 'paid', 'packed', 'shipped'].includes(o.status));
+  const remindHtml = dueTomorrow.length ? `<div class="panel" style="border-color:#1f8f4e;background:#effaf2"><h2>Delivery tomorrow: send reminders</h2>
+<div class="row">${dueTomorrow.map((o) => `<a class="btn sm wa" href="${e(waLink(o.customer.phone, mailer.whatsappText(o, 'reminder', site)))}" target="_blank" rel="noopener">📲 ${e(o.customer.name)} · ${e(o.ref)}</a>`).join('')}</div></div>` : '';
   return `<h1>Orders</h1>
+${remindHtml}
 <div class="cards">
 <div class="card"><b>${s.unseen}</b>New orders</div>
 <div class="card"><b>${s.today}</b>Orders today</div>
@@ -264,7 +270,7 @@ ${inTransit.length ? `<p class="muted" style="margin:12px 0 6px">On the way now<
     `<span><a href="/admin/order?ref=${encodeURIComponent(o.ref)}">${e(o.ref)}</a> 📍 ${e(o.place)}</span>`).join('')}</div>` : ''}</div>`;
 }
 
-function orderView(o, flash) {
+function orderView(o, flash, waKind) {
   const c = o.customer;
   const options = STATUSES.map((s) => `<option value="${s}"${s === o.status ? ' selected' : ''}>${STATUS_LABEL[s]}</option>`).join('');
   const address = [c.name, c.address1, c.address2, `${c.city}, ${c.state} – ${c.pincode}`, `Phone: ${c.phone}`].filter(Boolean);
@@ -278,12 +284,21 @@ function orderView(o, flash) {
   const sent = (o.notifications || []).slice().reverse().map((n) =>
     `<li>${n.ok ? '<span class="ok">✓ Sent</span>' : '<span class="no">✗ Not sent</span>'} · ${e(mailer.KIND_LABEL[n.kind] || n.kind)} email <span class="muted">${e(fmtDate(n.at))}</span></li>`).join('');
   const minDate = istDate(0, new Date(o.createdAt).getTime());
+  const email = mailer.enabled();
+  // Which WhatsApp message to suggest: the update just saved, or the order confirmation for a new order.
+  const suggest = waKind && mailer.KINDS.includes(waKind) ? waKind
+    : ['confirmed', 'paid'].includes(o.status) && (o.history || []).length <= 1 ? 'placed' : '';
+  const suggestHtml = suggest ? `<div class="panel" style="border-color:#1f8f4e;background:#effaf2">
+<h2>${waKind ? 'Saved. Now tell the customer on WhatsApp' : 'New order: send the confirmation on WhatsApp'}</h2>
+<p class="muted" style="margin:0 0 10px">${e(mailer.whatsappText(o, suggest, site))}</p>
+<a class="btn wa" href="${e(waLink(c.phone, mailer.whatsappText(o, suggest, site)))}" target="_blank" rel="noopener">📲 Send “${e(mailer.KIND_LABEL[suggest])}” on WhatsApp</a></div>` : '';
 
   return `<div class="no-print">
 <p><a href="/admin?view=orders">← All orders</a></p>
-${flash ? `<p class="flash">${e(flash)}</p>` : ''}
+${flash && !suggestHtml ? `<p class="flash">${e(flash)}</p>` : ''}
 <div class="bar"><h1 style="margin:0">Order ${e(o.ref)} ${statusPill(o.status)}</h1>
 <button class="btn alt" type="button" onclick="window.print()">🖨 Packing slip</button></div>
+${suggestHtml}
 <div class="grid2"><div>
 <div class="panel"><h2>Items</h2><table><thead><tr><th>Item</th><th>Price</th><th style="text-align:right">Total</th></tr></thead><tbody>${items}
 <tr><td colspan="2">Subtotal</td><td style="text-align:right">${rupees(o.subtotal)}</td></tr>
@@ -294,22 +309,22 @@ ${flash ? `<p class="flash">${e(flash)}</p>` : ''}
 <form method="post" action="/admin/orders/status"><input type="hidden" name="ref" value="${e(o.ref)}"><input type="hidden" name="back" value="order">
 <div class="field"><label for="st">Status</label><select id="st" name="status">${options}</select></div>
 <div class="field"><label for="ed">Expected delivery date</label><input id="ed" name="expectedDelivery" type="date" min="${e(minDate)}" value="${e(o.expectedDelivery || '')}">
-<span class="muted">${o.expectedDelivery ? '' : `Estimated: ${e(mailer.deliveryWindow(o) || 'not set')}. `}The customer gets a reminder email the day before this date.</span></div>
+<span class="muted">${o.expectedDelivery ? '' : `Estimated: ${e(mailer.deliveryWindow(o) || 'not set')}. `}${email ? 'The customer gets a reminder email the day before this date.' : 'The day before this date, the order shows under “Delivery tomorrow” on the Orders page with a WhatsApp reminder button.'}</span></div>
 <div class="field"><label for="pl">Location update (where the parcel is now)</label><input id="pl" name="place" maxlength="120" placeholder="e.g. Dispatched from Coimbatore / Reached Chennai hub">
 ${o.place ? `<span class="muted">Last: 📍 ${e(o.place)}</span>` : ''}</div>
 <div class="field"><label for="tr">Tracking (courier + number or link)</label><input id="tr" name="tracking" value="${e(o.tracking || '')}" maxlength="200"></div>
 <div class="field"><label for="nt">Private note (only you see this)</label><textarea id="nt" name="note" maxlength="1000">${e(o.note || '')}</textarea></div>
-<label class="check"><input type="checkbox" name="email" value="1" checked> Email the customer about this update</label>
+${email ? '<label class="check"><input type="checkbox" name="email" value="1" checked> Email the customer about this update</label>' : ''}
 <button class="btn" type="submit">Save</button></form>
-<p class="muted">Emails go out for: Packed, Shipped, Out for delivery, Delivered, Cancelled, a new delivery date, and location updates.${mailer.enabled() ? '' : ' <strong class="no">Email is not set up yet, so emails are recorded as “not sent”. Use the WhatsApp buttons meanwhile.</strong>'}</p></div>
+<p class="muted">After you save, a WhatsApp button appears with the message for that update ready to send.</p></div>
 </div><div>
 <div class="panel"><h2>Customer</h2><p>${address.map(e).join('<br>')}<br><a href="mailto:${e(c.email)}">${e(c.email)}</a></p>
 <div class="row"><a class="btn sm" href="tel:+91${e(c.phone)}">📞 Call</a></div>
-<p class="muted" style="margin:12px 0 6px">Send on WhatsApp (opens with the message ready):</p><div class="row">${waButtons}</div></div>
+<p class="muted" style="margin:12px 0 6px">Send any update on WhatsApp (opens with the message ready):</p><div class="row">${waButtons}</div></div>
 <div class="panel"><h2>Delivery</h2><p>${o.status === 'delivered' ? '✅ <strong>Delivered</strong>' : o.expectedDelivery ? `Arrives <strong>${e(mailer.fmtDay(o.expectedDelivery))}</strong>` : `Estimated ${e(mailer.deliveryWindow(o) || '–')}`}${o.place && !['delivered', 'cancelled'].includes(o.status) ? `<br>Now at 📍 <strong>${e(o.place)}</strong>` : ''}${o.tracking ? `<br>Tracking: ${e(o.tracking)}` : ''}</p>
 <h2 style="margin-top:14px">History</h2><ul class="timeline">${history || '<li class="muted">No updates yet.</li>'}</ul>
 <p class="muted">Placed ${e(fmtDate(o.createdAt))}</p></div>
-<div class="panel"><h2>Emails to customer</h2><ul style="padding-left:18px;margin:0">${sent || '<li class="muted">None yet.</li>'}</ul></div>
+${email || sent ? `<div class="panel"><h2>Emails to customer</h2><ul style="padding-left:18px;margin:0">${sent || '<li class="muted">None yet.</li>'}</ul></div>` : ''}
 </div></div></div>
 <div class="slip"><h1>neemveda · Packing slip</h1><p><strong>Order ${e(o.ref)}</strong> · ${e(fmtDate(o.createdAt))}</p>
 <p><strong>Ship to:</strong><br>${address.map(e).join('<br>')}</p>
@@ -395,14 +410,13 @@ async function updateStatus(req, res) {
   order.seen = true;
   store.saveOrder(order);
 
-  // One email per save, most important first: status change, then new date, then location.
-  if (form.email === '1') {
-    const kind = statusChanged && STATUS_EMAIL[status] ? STATUS_EMAIL[status]
-      : dateChanged && date ? 'expected'
-        : place ? 'location' : null;
-    if (kind) await notify(order, kind);
-  }
-  redirect(res, form.back === 'order' ? `/admin/order?ref=${encodeURIComponent(order.ref)}&saved=1` : '/admin?view=orders');
+  // One message per save, most important first: status change, then new date, then location.
+  const kind = statusChanged && STATUS_EMAIL[status] ? STATUS_EMAIL[status]
+    : dateChanged && date ? 'expected'
+      : place ? 'location' : '';
+  if (kind && form.email === '1' && mailer.enabled()) await notify(order, kind);
+  redirect(res, form.back === 'order'
+    ? `/admin/order?ref=${encodeURIComponent(order.ref)}&saved=1${kind ? '&wa=' + kind : ''}` : '/admin?view=orders');
 }
 
 async function saveProducts(req, res, rebuild) {
@@ -482,7 +496,7 @@ async function handle(req, res, urlPath, rebuild = () => {}) {
     const order = store.getOrder(String(q.get('ref') || ''));
     if (!order) return send(res, 404, page('Not found', navHtml('orders', unseenOrders().length), '<p>Order not found. <a href="/admin">Back to orders</a></p>'), html);
     if (order.seen === false) { order.seen = true; store.saveOrder(order); }
-    return send(res, 200, page(`Order ${order.ref}`, navHtml('orders', unseenOrders().length), orderView(order, q.get('saved') ? 'Saved.' : ''), { live: true }), html);
+    return send(res, 200, page(`Order ${order.ref}`, navHtml('orders', unseenOrders().length), orderView(order, q.get('saved') ? 'Saved.' : '', q.get('wa') || ''), { live: true }), html);
   }
   if (urlPath !== '/admin' && urlPath !== '/admin/') return send(res, 404, 'Not found');
 

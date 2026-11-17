@@ -13,6 +13,7 @@ const { readSite } = require('./catalog');
 const ACTIVE = ['confirmed', 'paid', 'packed', 'shipped'];
 
 async function notify(order, kind) {
+  if (!mailer.enabled()) return false; // email not set up: updates go out on WhatsApp from the admin panel
   let ok = false;
   try {
     ok = await mailer.notifyCustomer(order, kind, readSite());

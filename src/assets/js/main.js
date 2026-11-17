@@ -492,7 +492,7 @@
       '<div class="confirmation__icon"><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg></div>' +
       '<p class="eyebrow">Order ' + esc(order.ref) + '</p>' +
       '<h2>Thank you, ' + esc(order.customer.name.split(' ')[0]) + '!</h2>' +
-      '<p>Your order has been received' + (order.payment === 'cod' ? '. Please keep <strong>' + (order.total != null ? '₹' + order.total : 'the amount') + '</strong> ready to pay in cash on delivery' : '') + '. We will send updates to <strong>' + esc(order.customer.email) + '</strong> and on WhatsApp at <strong>' + esc(order.customer.phone) + '</strong>.</p>' +
+      '<p>Your order has been received' + (order.payment === 'cod' ? '. Please keep <strong>' + (order.total != null ? '₹' + order.total : 'the amount') + '</strong> ready to pay in cash on delivery' : '') + '. We will send order updates on WhatsApp to <strong>' + esc(order.customer.phone) + '</strong>.</p>' +
       (order.estimate ? '<p>🚚 Expected delivery: <strong>' + esc(order.estimate) + '</strong></p>' : '') +
       '<p class="muted">Save your order number <strong>' + esc(order.ref) + '</strong> to <a href="' + u('track.html') + '?ref=' + encodeURIComponent(order.ref) + '">track your order</a>.</p>' +
       (demo ? '<p class="notice"><span><span class="placeholder">[PLACEHOLDER]</span> Demo mode: no payment gateway or order backend is connected yet, so no payment was taken and this order was not stored.</span></p>' : '') +
