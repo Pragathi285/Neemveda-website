@@ -493,6 +493,7 @@
       '<p class="eyebrow">Order ' + esc(order.ref) + '</p>' +
       '<h2>Thank you, ' + esc(order.customer.name.split(' ')[0]) + '!</h2>' +
       '<p>Your order has been received' + (order.payment === 'cod' ? '. Please keep <strong>' + (order.total != null ? '₹' + order.total : 'the amount') + '</strong> ready to pay in cash on delivery' : '') + '. We will send updates to <strong>' + esc(order.customer.email) + '</strong> and on WhatsApp at <strong>' + esc(order.customer.phone) + '</strong>.</p>' +
+      (order.estimate ? '<p>🚚 Expected delivery: <strong>' + esc(order.estimate) + '</strong></p>' : '') +
       '<p class="muted">Save your order number <strong>' + esc(order.ref) + '</strong> to <a href="' + u('track.html') + '?ref=' + encodeURIComponent(order.ref) + '">track your order</a>.</p>' +
       (demo ? '<p class="notice"><span><span class="placeholder">[PLACEHOLDER]</span> Demo mode: no payment gateway or order backend is connected yet, so no payment was taken and this order was not stored.</span></p>' : '') +
       '<div class="btn-row" style="justify-content:center">' +
@@ -623,6 +624,7 @@
       }).then(function (res) {
         order.ref = res.ref;
         order.total = res.total;
+        order.estimate = res.estimate;
         if (!res.razorpay) { showConfirmation(order, false); return; }
         status.textContent = 'Opening secure payment…';
         return openRazorpay(order, res.razorpay, ui);
@@ -668,6 +670,9 @@
             '<p class="eyebrow">Order ' + esc(o.ref) + '</p>' +
             '<h2 style="margin:4px 0 6px">' + esc(o.statusLabel) + '</h2>' +
             '<p class="muted">Placed ' + esc(fmt(o.createdAt)) + ' · ' + esc(o.payment) + ' · Delivering to ' + esc(o.city) + '</p>' +
+            (o.status !== 'delivered' && o.status !== 'cancelled' && (o.expectedDelivery || o.estimate)
+              ? '<p class="notice"><span>🚚 <strong>' + (o.expectedDelivery ? 'Arrives ' + esc(o.expectedDelivery) : 'Expected ' + esc(o.estimate)) + '</strong></span></p>' : '') +
+            (o.place && o.status !== 'delivered' ? '<p class="notice"><span>📍 <strong>Now at:</strong> ' + esc(o.place) + '</span></p>' : '') +
             (o.tracking ? '<p class="notice"><span><strong>Tracking:</strong> ' + esc(o.tracking) + '</span></p>' : '') +
             '<ul class="summary__lines" style="margin-top:12px">' + o.lines.map(function (l) {
               return '<li class="summary__line"><span>' + l.qty + ' × ' + esc(l.name) + '</span><span>₹' + l.total + '</span></li>';
@@ -675,7 +680,9 @@
             '<div class="summary__rows"><div class="summary__row"><span>Shipping</span><span>' + (o.shipping ? '₹' + o.shipping : 'Free') + '</span></div>' +
             '<div class="summary__row summary__row--total"><span>Total</span><span>₹' + o.total + '</span></div></div>' +
             '<h3 style="margin-top:18px;font-size:1rem">Updates</h3><ul class="muted" style="padding-left:18px">' +
-            o.history.slice().reverse().map(function (h) { return '<li><strong>' + esc(h.label) + '</strong> · ' + esc(fmt(h.at)) + '</li>'; }).join('') +
+            o.history.slice().reverse().map(function (h) {
+              return '<li><strong>' + esc(h.label) + '</strong>' + (h.place ? ' · 📍 ' + esc(h.place) : '') + ' · ' + esc(fmt(h.at)) + '</li>';
+            }).join('') +
             '</ul></div>';
         }, function (err) { status.textContent = err.message; })
         .then(function () { btn.disabled = false; });

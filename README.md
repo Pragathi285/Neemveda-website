@@ -33,11 +33,26 @@ Check what's configured at `/api/health`. Never share `.env` or put the secret k
 4. The order appears in `/admin` straight away: the panel checks every 10 seconds and plays a sound and shows a notification for each new order. If email is set up, you and the customer also get an email. When you mark it **Shipped** (with optional tracking), the customer is emailed.
 5. On the confirmation screen the customer can send the full order to your WhatsApp with one tap, and later check its status at `/track.html` with the order number and phone number.
 
+## Customer emails
+
+Sent automatically once email is set up (`SMTP_PASS` in `.env`), and logged on each order page as sent / not sent:
+
+| When | Email |
+|---|---|
+| Order placed (COD) or paid online | "Order placed successfully" with items, total and expected delivery window |
+| Status set to Packed / Shipped / Out for delivery / Delivered / Cancelled | One email for each |
+| Expected delivery date set or changed | "Delivery date for your order" |
+| Day before the expected delivery date (from 9 am IST) | "Arriving tomorrow" reminder (once) |
+| Location update added | "Update on your order" |
+
+Untick "Email the customer about this update" on the order page to skip an email. Each stage also has a WhatsApp button on the order page that opens WhatsApp with the same message ready to send.
+
 ## Admin panel (`/admin`)
 
 - **Log in** with `ADMIN_USER` / `ADMIN_PASSWORD` from `.env` (you stay logged in for 7 days on that device; changing the password logs everyone out).
 - **Orders:** new-order alerts (tap “Turn on new-order alerts” once per device), search, status filter, today's orders, COD amount to collect, CSV download.
 - **Order page:** items and totals, customer contact (call / WhatsApp with ready messages), status (Confirmed → Packed → Shipped → Delivered), tracking number, private notes, history, printable packing slip.
+- **Delivery updates:** on the order page set the expected delivery date and add location updates ("Reached Chennai hub"). Customers see them on the Track order page; the orders list shows where each parcel is, plus an "Orders by place" summary.
 - **Products:** change price, MRP, stock and badge. Saved to `data/product-overrides.json` (not in git) and the site updates immediately.
 - **Newsletter** and **Messages** from the website forms.
 

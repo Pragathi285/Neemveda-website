@@ -17,11 +17,15 @@ const catalog = require('./catalog');
 const razorpay = require('./razorpay');
 const { readBody, send, sendJson, safeEqual, escapeHtml: e, rupees, clean, HttpError, rateLimit } = require('./util');
 
-const STATUSES = ['awaiting_payment', 'confirmed', 'paid', 'packed', 'shipped', 'delivered', 'cancelled'];
+const { notify, istDate } = require('./notify');
+
+const STATUSES = ['awaiting_payment', 'confirmed', 'paid', 'packed', 'shipped', 'out_for_delivery', 'delivered', 'cancelled'];
 const STATUS_LABEL = {
-  awaiting_payment: 'Awaiting payment', confirmed: 'Confirmed (COD)', paid: 'Paid online',
-  packed: 'Packed', shipped: 'Shipped', delivered: 'Delivered', cancelled: 'Cancelled',
+  awaiting_payment: 'Awaiting payment', confirmed: 'Confirmed (COD)', paid: 'Paid online', packed: 'Packed',
+  shipped: 'Shipped', out_for_delivery: 'Out for delivery', delivered: 'Delivered', cancelled: 'Cancelled',
 };
+// Status changes that email the customer (when "Email the customer" is ticked).
+const STATUS_EMAIL = { packed: 'packed', shipped: 'shipped', out_for_delivery: 'out_for_delivery', delivered: 'delivered', cancelled: 'cancelled' };
 const TO_SHIP = ['confirmed', 'paid', 'packed'];
 
 /* ------------------------------------------------------------------ session */
@@ -98,13 +102,13 @@ const payLabel = (o) => mailer.PAYMENT_LABEL[o.payment] || o.payment;
 
 function stats(all) {
   const today = istDay(new Date().toISOString());
-  const received = (o) => (o.payment === 'cod' ? o.status === 'delivered' : ['paid', 'packed', 'shipped', 'delivered'].includes(o.status));
+  const received = (o) => (o.payment === 'cod' ? o.status === 'delivered' : ['paid', 'packed', 'shipped', 'out_for_delivery', 'delivered'].includes(o.status));
   return {
     total: all.length,
     today: all.filter((o) => istDay(o.createdAt) === today).length,
     unseen: all.filter((o) => o.seen === false).length,
     toShip: all.filter((o) => TO_SHIP.includes(o.status)).length,
-    codDue: all.filter((o) => o.payment === 'cod' && ['confirmed', 'packed', 'shipped'].includes(o.status)).reduce((s, o) => s + o.total, 0),
+    codDue: all.filter((o) => o.payment === 'cod' && ['confirmed', 'packed', 'shipped', 'out_for_delivery'].includes(o.status)).reduce((s, o) => s + o.total, 0),
     revenue: all.filter(received).reduce((s, o) => s + o.total, 0),
   };
 }
@@ -130,7 +134,9 @@ th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;vertical-align:t
 tr.new td{background:#fff8e6}tr.new td:first-child{box-shadow:inset 4px 0 0 #E0A93B}
 .st{display:inline-block;padding:2px 9px;border-radius:99px;font-size:12px;background:#eee;white-space:nowrap}
 .st-paid,.st-confirmed{background:#dfe9d3;color:#2F4F2F}.st-packed{background:#efe0f5}.st-shipped{background:#d8e6ef}.st-delivered{background:#2F4F2F;color:#fff}
-.st-cancelled{background:#f3dcd5}.st-awaiting_payment{background:#f6e7c4}.newtag{background:#E0A93B;color:#231F20;font-size:11px;font-weight:700;border-radius:4px;padding:1px 5px;margin-left:6px}
+.st-out_for_delivery{background:#fde3c8}.st-cancelled{background:#f3dcd5}
+.places{display:flex;flex-wrap:wrap;gap:6px}.places span{background:#fff;border:1px solid rgba(47,79,47,.2);border-radius:99px;padding:3px 10px;font-size:13px}
+.ok{color:#2F4F2F}.no{color:#a33}.check{display:flex;gap:8px;align-items:center;font-size:14px;color:#231F20;margin:4px 0 12px}.st-awaiting_payment{background:#f6e7c4}.newtag{background:#E0A93B;color:#231F20;font-size:11px;font-weight:700;border-radius:4px;padding:1px 5px;margin-left:6px}
 select,input,textarea{font:inherit;font-size:14px;padding:7px 9px;border:1px solid #c9c2b2;border-radius:8px;background:#fff}textarea{width:100%;min-height:70px}
 label{font-size:13px;color:#555}.field{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
 .muted{color:#666;font-size:13px}.wrap{overflow-x:auto}.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
@@ -214,6 +220,8 @@ function ordersView(q) {
 <td><a href="${href}"><strong>${e(o.ref)}</strong></a>${o.seen === false ? '<span class="newtag">NEW</span>' : ''}<div class="muted">${e(fmtDate(o.createdAt))}</div></td>
 <td>${e(c.name)}<div class="muted"><a href="tel:+91${e(c.phone)}">${e(c.phone)}</a> · <a href="${e(waLink(c.phone, `Hi ${c.name}, this is neemveda about your order ${o.ref}.`))}" target="_blank" rel="noopener">WhatsApp</a></div></td>
 <td class="muted">${e(c.city)}, ${e(c.state)} – ${e(c.pincode)}</td>
+<td>${o.status === 'delivered' ? '✅ Delivered' : o.status === 'cancelled' ? '<span class="muted">–</span>'
+    : `${o.place ? `📍 ${e(o.place)}` : '<span class="muted">Not shipped yet</span>'}${o.expectedDelivery ? `<div class="muted">Arrives ${e(mailer.fmtDay(o.expectedDelivery))}</div>` : ''}`}</td>
 <td>${o.lines.map((l) => `${l.qty} × ${e(l.name)}`).join('<br>')}</td>
 <td><strong>${rupees(o.total)}</strong><div class="muted">${e(payLabel(o))}</div></td>
 <td>${statusPill(o.status)}<div style="margin-top:6px"><a class="btn sm alt" href="${href}">Open</a></div></td></tr>`;
@@ -235,9 +243,25 @@ function ordersView(q) {
 <select name="status" aria-label="Filter by status" onchange="this.form.submit()">${options}</select>
 <button class="btn alt" type="submit">Search</button></form>
 <div class="row"><button class="btn alt" type="button" id="enable-alerts">🔔 Turn on new-order alerts</button><a class="btn" href="/admin/orders.csv">Download CSV</a></div></div>
-<div class="wrap" data-live-refresh><table><thead><tr><th>Order</th><th>Customer</th><th>Deliver to</th><th>Items</th><th>Total</th><th>Status</th></tr></thead>
-<tbody>${rows || `<tr><td colspan="6" class="muted">${all.length ? 'No orders match.' : 'No orders yet. New orders appear here automatically.'}</td></tr>`}</tbody></table></div>
+${placesHtml(all)}
+<div class="wrap" data-live-refresh><table><thead><tr><th>Order</th><th>Customer</th><th>Deliver to</th><th>Now at / arrives</th><th>Items</th><th>Total</th><th>Status</th></tr></thead>
+<tbody>${rows || `<tr><td colspan="7" class="muted">${all.length ? 'No orders match.' : 'No orders yet. New orders appear here automatically.'}</td></tr>`}</tbody></table></div>
 <p class="muted">This page checks for new orders every 10 seconds. Tap “Turn on new-order alerts” once to get a sound and a notification on this device.</p>`;
+}
+
+/* Where orders are going: counts by state and city (cancelled orders left out). */
+function placesHtml(all) {
+  const live = all.filter((o) => o.status !== 'cancelled');
+  if (!live.length) return '';
+  const count = (key) => Object.entries(live.reduce((m, o) => { const k = key(o); m[k] = (m[k] || 0) + 1; return m; }, {}))
+    .sort((a, b) => b[1] - a[1]).slice(0, 12)
+    .map(([k, n]) => `<span>${e(k)} <strong>${n}</strong></span>`).join('');
+  const inTransit = live.filter((o) => ['shipped', 'out_for_delivery'].includes(o.status) && o.place);
+  return `<div class="panel"><h2>Orders by place</h2>
+<p class="muted" style="margin:0 0 6px">States</p><div class="places">${count((o) => o.customer.state)}</div>
+<p class="muted" style="margin:12px 0 6px">Cities</p><div class="places">${count((o) => o.customer.city.trim())}</div>
+${inTransit.length ? `<p class="muted" style="margin:12px 0 6px">On the way now</p><div class="places">${inTransit.map((o) =>
+    `<span><a href="/admin/order?ref=${encodeURIComponent(o.ref)}">${e(o.ref)}</a> 📍 ${e(o.place)}</span>`).join('')}</div>` : ''}</div>`;
 }
 
 function orderView(o, flash) {
@@ -245,11 +269,15 @@ function orderView(o, flash) {
   const options = STATUSES.map((s) => `<option value="${s}"${s === o.status ? ' selected' : ''}>${STATUS_LABEL[s]}</option>`).join('');
   const address = [c.name, c.address1, c.address2, `${c.city}, ${c.state} – ${c.pincode}`, `Phone: ${c.phone}`].filter(Boolean);
   const items = o.lines.map((l) => `<tr><td>${l.qty} × ${e(l.name)}</td><td>${rupees(l.unitPrice)}</td><td style="text-align:right">${rupees(l.total)}</td></tr>`).join('');
-  const siteUrl = catalog.readSite().url;
-  const msgConfirm = `Hi ${c.name}, thank you for your neemveda order ${o.ref} (${rupees(o.total)}, ${payLabel(o)}). We'll pack it soon and share the tracking details.`;
-  const msgShipped = `Hi ${c.name}, your neemveda order ${o.ref} has been shipped.${o.tracking ? ' Tracking: ' + o.tracking + '.' : ''} Check its status at ${siteUrl}/track.html`;
+  const site = catalog.readSite();
+  const waKinds = ['placed', 'packed', 'shipped', ...(o.expectedDelivery ? ['expected', 'reminder'] : []), 'out_for_delivery', ...(o.place ? ['location'] : []), 'delivered'];
+  const waButtons = waKinds.map((k) =>
+    `<a class="btn sm wa" href="${e(waLink(c.phone, mailer.whatsappText(o, k, site)))}" target="_blank" rel="noopener">${e(mailer.KIND_LABEL[k])}</a>`).join('');
   const history = (o.history || []).slice().reverse().map((h) =>
-    `<li><strong>${e(STATUS_LABEL[h.status] || h.status)}</strong> <span class="muted">${e(fmtDate(h.at))}${h.note ? ' · ' + e(h.note) : ''}</span></li>`).join('');
+    `<li><strong>${e(STATUS_LABEL[h.status] || h.status)}</strong>${h.place ? ` · 📍 ${e(h.place)}` : ''} <span class="muted">${e(fmtDate(h.at))}${h.note ? ' · ' + e(h.note) : ''}</span></li>`).join('');
+  const sent = (o.notifications || []).slice().reverse().map((n) =>
+    `<li>${n.ok ? '<span class="ok">✓ Sent</span>' : '<span class="no">✗ Not sent</span>'} · ${e(mailer.KIND_LABEL[n.kind] || n.kind)} email <span class="muted">${e(fmtDate(n.at))}</span></li>`).join('');
+  const minDate = istDate(0, new Date(o.createdAt).getTime());
 
   return `<div class="no-print">
 <p><a href="/admin?view=orders">← All orders</a></p>
@@ -265,17 +293,23 @@ ${flash ? `<p class="flash">${e(flash)}</p>` : ''}
 <div class="panel"><h2>Update order</h2>
 <form method="post" action="/admin/orders/status"><input type="hidden" name="ref" value="${e(o.ref)}"><input type="hidden" name="back" value="order">
 <div class="field"><label for="st">Status</label><select id="st" name="status">${options}</select></div>
+<div class="field"><label for="ed">Expected delivery date</label><input id="ed" name="expectedDelivery" type="date" min="${e(minDate)}" value="${e(o.expectedDelivery || '')}">
+<span class="muted">${o.expectedDelivery ? '' : `Estimated: ${e(mailer.deliveryWindow(o) || 'not set')}. `}The customer gets a reminder email the day before this date.</span></div>
+<div class="field"><label for="pl">Location update (where the parcel is now)</label><input id="pl" name="place" maxlength="120" placeholder="e.g. Dispatched from Coimbatore / Reached Chennai hub">
+${o.place ? `<span class="muted">Last: 📍 ${e(o.place)}</span>` : ''}</div>
 <div class="field"><label for="tr">Tracking (courier + number or link)</label><input id="tr" name="tracking" value="${e(o.tracking || '')}" maxlength="200"></div>
 <div class="field"><label for="nt">Private note (only you see this)</label><textarea id="nt" name="note" maxlength="1000">${e(o.note || '')}</textarea></div>
+<label class="check"><input type="checkbox" name="email" value="1" checked> Email the customer about this update</label>
 <button class="btn" type="submit">Save</button></form>
-<p class="muted">Changing the status to “Shipped” emails the customer (once email is set up). Customers can also check the status on the Track order page.</p></div>
+<p class="muted">Emails go out for: Packed, Shipped, Out for delivery, Delivered, Cancelled, a new delivery date, and location updates.${mailer.enabled() ? '' : ' <strong class="no">Email is not set up yet, so emails are recorded as “not sent”. Use the WhatsApp buttons meanwhile.</strong>'}</p></div>
 </div><div>
 <div class="panel"><h2>Customer</h2><p>${address.map(e).join('<br>')}<br><a href="mailto:${e(c.email)}">${e(c.email)}</a></p>
-<div class="row"><a class="btn sm" href="tel:+91${e(c.phone)}">📞 Call</a>
-<a class="btn sm wa" href="${e(waLink(c.phone, msgConfirm))}" target="_blank" rel="noopener">WhatsApp: order confirmed</a>
-<a class="btn sm wa" href="${e(waLink(c.phone, msgShipped))}" target="_blank" rel="noopener">WhatsApp: shipped</a></div></div>
-<div class="panel"><h2>History</h2><ul class="timeline">${history || '<li class="muted">No updates yet.</li>'}</ul>
+<div class="row"><a class="btn sm" href="tel:+91${e(c.phone)}">📞 Call</a></div>
+<p class="muted" style="margin:12px 0 6px">Send on WhatsApp (opens with the message ready):</p><div class="row">${waButtons}</div></div>
+<div class="panel"><h2>Delivery</h2><p>${o.status === 'delivered' ? '✅ <strong>Delivered</strong>' : o.expectedDelivery ? `Arrives <strong>${e(mailer.fmtDay(o.expectedDelivery))}</strong>` : `Estimated ${e(mailer.deliveryWindow(o) || '–')}`}${o.place && !['delivered', 'cancelled'].includes(o.status) ? `<br>Now at 📍 <strong>${e(o.place)}</strong>` : ''}${o.tracking ? `<br>Tracking: ${e(o.tracking)}` : ''}</p>
+<h2 style="margin-top:14px">History</h2><ul class="timeline">${history || '<li class="muted">No updates yet.</li>'}</ul>
 <p class="muted">Placed ${e(fmtDate(o.createdAt))}</p></div>
+<div class="panel"><h2>Emails to customer</h2><ul style="padding-left:18px;margin:0">${sent || '<li class="muted">None yet.</li>'}</ul></div>
 </div></div></div>
 <div class="slip"><h1>neemveda · Packing slip</h1><p><strong>Order ${e(o.ref)}</strong> · ${e(fmtDate(o.createdAt))}</p>
 <p><strong>Ship to:</strong><br>${address.map(e).join('<br>')}</p>
@@ -336,17 +370,38 @@ async function updateStatus(req, res) {
   const order = store.getOrder(String(form.ref || ''));
   const status = String(form.status || '');
   if (!order || !STATUSES.includes(status)) throw new HttpError(400, 'Invalid update.');
-  const becameShipped = status === 'shipped' && order.status !== 'shipped';
-  if (status !== order.status) {
+  const now = new Date().toISOString();
+  const place = clean(form.place, 120);
+  const date = String(form.expectedDelivery || '').trim();
+  if (date && !/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new HttpError(400, 'Invalid delivery date.');
+
+  const statusChanged = status !== order.status;
+  const dateChanged = date !== (order.expectedDelivery || '');
+  order.history = order.history || [];
+  if (statusChanged) {
     order.status = status;
-    order.history = order.history || [];
-    order.history.push({ at: new Date().toISOString(), status, note: 'admin' });
+    order.history.push({ at: now, status, note: 'admin', place: place || undefined });
+  } else if (place) {
+    order.history.push({ at: now, status, note: 'location update', place });
+  }
+  if (place) order.place = place;
+  if (dateChanged) {
+    order.expectedDelivery = date || undefined;
+    // The "expected" email already names the date, so skip the separate reminder when it's tomorrow.
+    if (date && date === istDate(1)) order.reminderSentFor = date;
   }
   order.tracking = clean(form.tracking, 200);
   if (form.note !== undefined) order.note = String(form.note).replace(/\r\n/g, '\n').slice(0, 1000).trim();
   order.seen = true;
   store.saveOrder(order);
-  if (becameShipped) mailer.notifyShipped(order);
+
+  // One email per save, most important first: status change, then new date, then location.
+  if (form.email === '1') {
+    const kind = statusChanged && STATUS_EMAIL[status] ? STATUS_EMAIL[status]
+      : dateChanged && date ? 'expected'
+        : place ? 'location' : null;
+    if (kind) await notify(order, kind);
+  }
   redirect(res, form.back === 'order' ? `/admin/order?ref=${encodeURIComponent(order.ref)}&saved=1` : '/admin?view=orders');
 }
 
@@ -370,12 +425,12 @@ async function saveProducts(req, res, rebuild) {
 }
 
 function exportOrders(res) {
-  const rows = [['Order', 'Date', 'Status', 'Payment', 'Payment ID', 'Name', 'Phone', 'Email', 'Address', 'City', 'State', 'PIN', 'Items', 'Subtotal', 'Shipping', 'Total', 'Tracking', 'Note']];
+  const rows = [['Order', 'Date', 'Status', 'Payment', 'Payment ID', 'Name', 'Phone', 'Email', 'Address', 'City', 'State', 'PIN', 'Items', 'Subtotal', 'Shipping', 'Total', 'Tracking', 'Expected delivery', 'Now at', 'Note']];
   for (const o of store.listOrders()) {
     const c = o.customer;
     rows.push([o.ref, fmtDate(o.createdAt), o.status, o.payment, o.razorpayPaymentId || '', c.name, c.phone, c.email,
       [c.address1, c.address2].filter(Boolean).join(', '), c.city, c.state, c.pincode,
-      o.lines.map((l) => `${l.qty} x ${l.name}`).join('; '), o.subtotal, o.shipping, o.total, o.tracking || '', o.note || '']);
+      o.lines.map((l) => `${l.qty} x ${l.name}`).join('; '), o.subtotal, o.shipping, o.total, o.tracking || '', o.expectedDelivery || '', o.place || '', o.note || '']);
   }
   send(res, 200, csv(rows), { 'Content-Type': 'text/csv; charset=utf-8', 'Content-Disposition': 'attachment; filename="neemveda-orders.csv"', 'Cache-Control': 'no-store' });
 }

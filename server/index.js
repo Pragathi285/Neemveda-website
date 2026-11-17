@@ -18,6 +18,7 @@ const store = require('./store');
 const razorpay = require('./razorpay');
 const mailer = require('./mailer');
 const admin = require('./admin');
+const { notify, estimateFor, startScheduler } = require('./notify');
 const { priceOrder, catalog } = require('./pricing');
 const {
   HttpError, readJson, send, sendJson, rateLimit, clean, validateEmail, validateCustomer, requireField,
@@ -56,7 +57,8 @@ function markPaid(order, paymentId, via) {
   order.paidAt = new Date().toISOString();
   setStatus(order, 'paid', `via ${via}`);
   store.saveOrder(order);
-  mailer.notifyNewOrder(order);
+  mailer.notifyOwnerNewOrder(order);
+  notify(order, 'placed');
   console.log(`[order] ${order.ref} paid (${via})`);
   return true;
 }
@@ -81,15 +83,17 @@ async function createOrder(req, res) {
     customer,
     ...pricing,
     seen: false, // shows as NEW in the admin panel until opened
+    estimate: estimateFor(Date.now()), // { from, to } delivery window shown to the customer
     history: [],
   };
 
   if (payment === 'cod') {
     setStatus(order, 'confirmed', 'Cash on Delivery');
     store.saveOrder(order);
-    mailer.notifyNewOrder(order);
+    mailer.notifyOwnerNewOrder(order);
+    notify(order, 'placed');
     console.log(`[order] ${order.ref} placed (COD, ₹${order.total})`);
-    return sendJson(res, 201, { ref: order.ref, status: order.status, total: order.total });
+    return sendJson(res, 201, { ref: order.ref, status: order.status, total: order.total, estimate: mailer.deliveryWindow(order) });
   }
 
   const rzp = await razorpay.createOrder({ amount: order.total * 100, receipt: order.ref, notes: { ref: order.ref } });
@@ -142,7 +146,8 @@ async function webhook(req, res) {
 /* Customer order tracking: needs the order number AND the phone number used for the order. */
 const TRACK_LABEL = {
   awaiting_payment: 'Awaiting payment', confirmed: 'Order confirmed', paid: 'Payment received',
-  packed: 'Packed', shipped: 'Shipped', delivered: 'Delivered', cancelled: 'Cancelled',
+  packed: 'Packed', shipped: 'Shipped', out_for_delivery: 'Out for delivery today', delivered: 'Delivered',
+  cancelled: 'Cancelled',
 };
 async function trackOrder(req, res) {
   rateLimit(req, 'track', 20, 10 * 60 * 1000);
@@ -164,8 +169,13 @@ async function trackOrder(req, res) {
     shipping: order.shipping,
     total: order.total,
     tracking: order.tracking || '',
+    expectedDelivery: order.expectedDelivery ? mailer.fmtDay(order.expectedDelivery) : '',
+    estimate: !order.expectedDelivery ? mailer.deliveryWindow(order) : '',
+    place: order.place || '',
     city: order.customer.city,
-    history: (order.history || []).map((h) => ({ at: h.at, status: h.status, label: TRACK_LABEL[h.status] || h.status })),
+    history: (order.history || []).map((h) => ({
+      at: h.at, status: h.status, label: TRACK_LABEL[h.status] || h.status, place: h.place || '',
+    })),
   });
 }
 
@@ -258,6 +268,8 @@ const server = http.createServer(async (req, res) => {
     });
   }
 });
+
+startScheduler();
 
 server.listen(config.port, () => {
   console.log(`[server] http://localhost:${config.port}`);
