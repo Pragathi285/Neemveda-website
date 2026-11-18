@@ -1,7 +1,7 @@
 ---
 page: contact
-title: Contact neemveda | WhatsApp, Email & Phone
-description: Questions about neem sticks, orders or bulk enquiries? Contact neemveda on WhatsApp, email or phone. We're happy to help.
+title: Contact neemveda | Email & Social
+description: Questions about neem sticks, orders or bulk enquiries? Contact neemveda by email or send us a message. We're happy to help.
 ---
 <section class="page-hero" aria-labelledby="contact-title">
   <svg class="deco-leaf" aria-hidden="true"><use href="#i-neem-leaf"/></svg>
@@ -28,10 +28,6 @@ description: Questions about neem sticks, orders or bulk enquiries? Contact neem
         <p class="error" aria-live="polite"></p>
       </div>
       <div class="field">
-        <label for="c-phone">Phone <span class="muted" style="text-transform:none;letter-spacing:0">(optional)</span></label>
-        <input class="input" id="c-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel">
-      </div>
-      <div class="field">
         <label for="c-topic">Topic</label>
         <select class="select" id="c-topic" name="topic">
           <option value="">Choose a topic</option>
@@ -50,19 +46,16 @@ description: Questions about neem sticks, orders or bulk enquiries? Contact neem
     </div>
     <div class="btn-row" style="margin-top:20px">
       <button class="btn btn-primary" type="submit"><svg class="icon" aria-hidden="true"><use href="#i-mail"/></svg>Send message</button>
-      <button class="btn btn-wa" type="button" data-contact-wa><svg class="icon" aria-hidden="true"><use href="#i-whatsapp"/></svg>Send via WhatsApp</button>
     </div>
     <p class="form-msg" data-form-msg role="status" aria-live="polite" style="margin-top:14px"></p>
   </form>
 
   <aside class="card contact-card" aria-labelledby="direct-title">
     <h2 id="direct-title" style="font-size:1.4rem">Reach us directly</h2>
-    <a class="btn btn-primary btn-block" href="https://wa.me/{{site.whatsapp}}?text=Hi%20neemveda%2C%20I%20have%20a%20question" target="_blank" rel="noopener">
-      <svg class="icon" aria-hidden="true"><use href="#i-whatsapp"/></svg>Chat on WhatsApp</a>
+    <a class="btn btn-primary btn-block" href="mailto:{{site.email}}?subject=Question%20for%20neemveda">
+      <svg class="icon" aria-hidden="true"><use href="#i-mail"/></svg>Email us</a>
     <ul class="contact-list">
-      <li><span class="benefit-icon"><svg class="icon" aria-hidden="true"><use href="#i-whatsapp"/></svg></span><span><strong>WhatsApp</strong><a href="https://wa.me/{{site.whatsapp}}" target="_blank" rel="noopener">{{site.whatsappDisplay}}</a></span></li>
       <li><span class="benefit-icon"><svg class="icon" aria-hidden="true"><use href="#i-mail"/></svg></span><span><strong>Email</strong><a href="mailto:{{site.email}}">{{site.emailDisplay}}</a></span></li>
-      <li><span class="benefit-icon"><svg class="icon" aria-hidden="true"><use href="#i-phone"/></svg></span><span><strong>Phone</strong><a href="tel:{{site.phone}}">{{site.phoneDisplay}}</a></span></li>
       <li><span class="benefit-icon"><svg class="icon" aria-hidden="true"><use href="#i-instagram"/></svg></span><span><strong>Instagram</strong><a href="{{site.instagram}}" target="_blank" rel="noopener">{{site.instagramHandle}}</a></span></li>
       <li><span class="benefit-icon"><svg class="icon" aria-hidden="true"><use href="#i-youtube"/></svg></span><span><strong>YouTube</strong><a href="{{site.youtube}}" target="_blank" rel="noopener">{{site.youtubeName}}</a></span></li>
       <li><span class="benefit-icon"><svg class="icon" aria-hidden="true"><use href="#i-clock"/></svg></span><span><strong>Hours</strong><span>{{site.hours}}</span></span></li>

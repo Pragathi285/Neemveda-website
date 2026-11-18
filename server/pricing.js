@@ -39,8 +39,8 @@ function priceOrder(items) {
     throw new HttpError(
       400,
       ship.freeAbove != null
-        ? `Online orders under ₹${ship.freeAbove} aren't available yet. Please add items worth ₹${ship.freeAbove} or more, or order on WhatsApp.`
-        : 'Shipping is not set up yet. Please order on WhatsApp.'
+        ? `Online orders under ₹${ship.freeAbove} aren't available yet. Please add items worth ₹${ship.freeAbove} or more.`
+        : 'Shipping is not set up yet. Please try again later.'
     );
   }
   return { lines, subtotal, shipping, total: subtotal + shipping };

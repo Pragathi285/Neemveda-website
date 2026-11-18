@@ -303,14 +303,8 @@
     var compose = function () {
       return 'Hi neemveda, this is ' + form.elements.name.value.trim() +
         (form.elements.topic.value ? ' (' + form.elements.topic.value + ')' : '') + '.\n\n' +
-        form.elements.message.value.trim() + '\n\nEmail: ' + form.elements.email.value.trim() +
-        (form.elements.phone.value.trim() ? '\nPhone: ' + form.elements.phone.value.trim() : '');
+        form.elements.message.value.trim() + '\n\nEmail: ' + form.elements.email.value.trim();
     };
-    var waBtn = $('[data-contact-wa]', form);
-    if (waBtn) waBtn.addEventListener('click', function () {
-      if (!check()) return;
-      window.open('https://wa.me/' + site.whatsapp + '?text=' + encodeURIComponent(compose()), '_blank', 'noopener');
-    });
     form.addEventListener('submit', function (e) {
       e.preventDefault();
       if (!check()) return;
@@ -331,7 +325,7 @@
         msg.classList.add('is-success');
         form.reset();
       }).catch(function () {
-        msg.textContent = 'Sorry, the message could not be sent. Please try WhatsApp or email instead.';
+        msg.textContent = 'Sorry, the message could not be sent. Please email us at ' + site.email + '.';
       });
     });
   }
@@ -356,7 +350,7 @@
       return {
         blocked: true,
         html: 'Add <strong>' + gap + '</strong> more to order online. Orders of ' + money(ship.freeAbove) +
-          ' and above ship free. Or <a href="https://wa.me/' + site.whatsapp + '" target="_blank" rel="noopener">order on WhatsApp</a>.'
+          ' and above ship free.'
       };
     }
     return { blocked: false, html: 'Add <strong>' + gap + '</strong> more for free shipping.' };
@@ -480,25 +474,18 @@
 
   function showConfirmation(order, demo) {
     var root = $('[data-checkout-root]');
-    var c = order.customer;
-    var payLabel = { cod: 'Cash on Delivery', upi: 'UPI', razorpay: 'Card / Netbanking' }[order.payment] || order.payment;
-    var waText = 'Hi neemveda, I just placed order ' + order.ref + '.\n' +
-      order.lines.map(function (l) { return '• ' + l.qty + ' × ' + l.product.name; }).join('\n') +
-      (order.total != null ? '\nTotal: ₹' + order.total : '') + '\nPayment: ' + payLabel +
-      '\nName: ' + c.name + '\nPhone: ' + c.phone +
-      '\nAddress: ' + [c.address1, c.address2, c.city, c.state + ' - ' + c.pincode].filter(Boolean).join(', ');
     root.innerHTML =
       '<div class="card confirmation" tabindex="-1" data-confirmation>' +
       '<div class="confirmation__icon"><svg class="icon" aria-hidden="true"><use href="#i-check"/></svg></div>' +
       '<p class="eyebrow">Order ' + esc(order.ref) + '</p>' +
       '<h2>Thank you, ' + esc(order.customer.name.split(' ')[0]) + '!</h2>' +
-      '<p>Your order has been received' + (order.payment === 'cod' ? '. Please keep <strong>' + (order.total != null ? '₹' + order.total : 'the amount') + '</strong> ready to pay in cash on delivery' : '') + '. We will send order updates on WhatsApp to <strong>' + esc(order.customer.phone) + '</strong>.</p>' +
+      '<p>Your order has been received' + (order.payment === 'cod' ? '. Please keep <strong>' + (order.total != null ? '₹' + order.total : 'the amount') + '</strong> ready to pay in cash on delivery' : '') + '. We have emailed your order details to <strong>' + esc(order.customer.email) + '</strong> and will email you at every step.</p>' +
       (order.estimate ? '<p>🚚 Expected delivery: <strong>' + esc(order.estimate) + '</strong></p>' : '') +
       '<p class="muted">Save your order number <strong>' + esc(order.ref) + '</strong> to <a href="' + u('track.html') + '?ref=' + encodeURIComponent(order.ref) + '">track your order</a>.</p>' +
       (demo ? '<p class="notice"><span><span class="placeholder">[PLACEHOLDER]</span> Demo mode: no payment gateway or order backend is connected yet, so no payment was taken and this order was not stored.</span></p>' : '') +
       '<div class="btn-row" style="justify-content:center">' +
       '<a class="btn btn-primary" href="' + u('shop.html') + '">Continue shopping</a>' +
-      '<a class="btn btn-wa" href="https://wa.me/' + site.whatsapp + '?text=' + encodeURIComponent(waText) + '" target="_blank" rel="noopener"><svg class="icon" aria-hidden="true"><use href="#i-whatsapp"/></svg>Send order on WhatsApp</a>' +
+      '<a class="btn btn-outline" href="' + u('track.html') + '?ref=' + encodeURIComponent(order.ref) + '">Track your order</a>' +
       '</div></div>';
     Cart.clear();
     var heading = $('[data-checkout-heading]');

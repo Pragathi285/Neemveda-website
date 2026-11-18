@@ -73,7 +73,7 @@ async function createOrder(req, res) {
   if (!['upi', 'razorpay', 'cod'].includes(payment)) throw new HttpError(400, 'Please choose a payment method.', 'payment');
   if (payment === 'cod' && !(site.payments && site.payments.cod)) throw new HttpError(400, 'Cash on Delivery is not available.', 'payment');
   if (payment !== 'cod' && !razorpay.configured()) {
-    throw new HttpError(503, 'Online payment is not set up yet. Please choose Cash on Delivery or order on WhatsApp.', 'payment');
+    throw new HttpError(503, 'Online payment is not set up yet. Please choose Cash on Delivery.', 'payment');
   }
 
   const order = {

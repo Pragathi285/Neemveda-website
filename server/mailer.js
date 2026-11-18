@@ -150,7 +150,7 @@ const CUSTOMER_EMAILS = {
   cancelled: (o) => ({
     subject: `Your order ${o.ref} has been cancelled`,
     title: 'Your order has been cancelled',
-    line: `Your neemveda order ${o.ref} has been cancelled. If this is unexpected or you have questions, just reply to this email or message us on WhatsApp.`,
+    line: `Your neemveda order ${o.ref} has been cancelled. If this is unexpected or you have questions, just reply to this email.`,
   }),
 };
 const KINDS = Object.keys(CUSTOMER_EMAILS);
@@ -179,7 +179,7 @@ ${showCod ? codLine(o) : ''}
 ${showItems ? orderTableHtml(o) : ''}
 ${kind === 'placed' ? `<p style="font-size:14px;margin-top:16px"><strong>Delivering to</strong><br>${escapeHtml(c.name)}<br>${escapeHtml(c.address1)}${c.address2 ? '<br>' + escapeHtml(c.address2) : ''}<br>${escapeHtml(c.city)}, ${escapeHtml(c.state)} – ${escapeHtml(c.pincode)}</p><p style="font-size:14px">Payment: ${escapeHtml(PAYMENT_LABEL[o.payment] || o.payment)}</p>` : ''}
 ${kind === 'cancelled' ? '' : button(trackUrl, 'Track your order')}`,
-  `Questions? Reply to this email or WhatsApp us at ${escapeHtml(site.whatsappDisplay || site.whatsapp)}.<br>Order number: ${escapeHtml(o.ref)}`);
+  `Questions? Just reply to this email.<br>Order number: ${escapeHtml(o.ref)}`);
   const text = `Hi ${c.name},\n\n${m.line}\n${o.tracking && kind !== 'placed' ? `\nTracking: ${o.tracking}\n` : ''}${
     showCod && o.payment === 'cod' ? `\nCash on Delivery: please keep ${rupees(o.total)} ready.\n` : ''}${
     showItems ? `\n${orderSummaryText(o)}\n` : ''}\nTrack your order: ${trackUrl}\n\nWarmly,\nneemveda`;

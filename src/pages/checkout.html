@@ -12,7 +12,7 @@ noindex: true
 </section>
 
 <div class="container" data-checkout-root>
-  <noscript><div class="card empty"><p>Please enable JavaScript to check out, or order directly on <a href="https://wa.me/{{site.whatsapp}}">WhatsApp</a>.</p></div></noscript>
+  <noscript><div class="card empty"><p>Please enable JavaScript to check out, or email us at <a href="mailto:{{site.email}}">{{site.emailDisplay}}</a>.</p></div></noscript>
   <div class="checkout-layout">
     <form class="checkout-form" data-checkout-form novalidate>
       <section class="card checkout-step" aria-labelledby="step-contact">
@@ -26,7 +26,7 @@ noindex: true
           <div class="field">
             <label for="co-phone">Mobile number</label>
             <input class="input" id="co-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel-national" placeholder="10-digit mobile" required aria-describedby="co-phone-hint">
-            <p class="hint" id="co-phone-hint">For delivery updates on SMS / WhatsApp</p>
+            <p class="hint" id="co-phone-hint">So the courier can reach you for delivery</p>
             <p class="error" aria-live="polite"></p>
           </div>
           <div class="field">

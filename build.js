@@ -155,7 +155,6 @@ function build() {
   // Data for the browser (cart, checkout).
   const publicSite = {
     name: site.name,
-    whatsapp: site.whatsapp,
     email: site.email,
     shipping: site.shipping,
     payments: site.payments,
