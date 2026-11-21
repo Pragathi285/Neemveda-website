@@ -35,6 +35,7 @@ require_once NVC_DIR . 'includes/alerts.php';
 require_once NVC_DIR . 'includes/push.php';
 require_once NVC_DIR . 'includes/announce.php';
 require_once NVC_DIR . 'includes/shop.php';
+require_once NVC_DIR . 'includes/security.php';
 if (defined('WP_CLI') && WP_CLI) {
 	require_once NVC_DIR . 'includes/setup.php';
 }

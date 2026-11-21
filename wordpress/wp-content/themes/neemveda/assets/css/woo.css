@@ -170,3 +170,7 @@ mark.order-status, .woocommerce-order-overview strong { background: none; }
 .woocommerce form.checkout::before, .woocommerce form.checkout::after,
 .woocommerce div.product::before, .woocommerce div.product::after { display: none !important; }
 .woocommerce-account:not(.logged-in) .woocommerce { max-width: 980px; margin-inline: auto; }
+
+/* Cart: coupon field wide enough to type in */
+.woocommerce-cart table.cart td.actions .coupon .input-text { width: 170px !important; min-height: 46px; }
+@media (max-width: 600px) { .woocommerce-cart table.cart td.actions .coupon .input-text { width: 100% !important; margin-bottom: 8px; } }

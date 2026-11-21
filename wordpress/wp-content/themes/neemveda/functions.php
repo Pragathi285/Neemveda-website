@@ -45,6 +45,8 @@ add_action('wp_enqueue_scripts', function () {
 	}
 	wp_enqueue_style('nv-woo', nv_asset('css/woo.css'), $deps, NV_THEME_VERSION);
 	wp_enqueue_script('nv-theme', nv_asset('js/theme.js'), [], NV_THEME_VERSION, ['strategy' => 'defer', 'in_footer' => true]);
+	// Keeps the header cart count right after add / remove / quantity changes (WooCommerce no longer loads it everywhere).
+	if (class_exists('WooCommerce')) wp_enqueue_script('wc-cart-fragments');
 });
 
 add_action('wp_head', function () {
@@ -198,6 +200,13 @@ add_filter('woocommerce_breadcrumb_defaults', function ($d) {
 	$d['wrap_after']  = '</nav>';
 	$d['delimiter']   = ' <span aria-hidden="true">/</span> ';
 	return $d;
+});
+
+
+// No downloadable products, so hide the empty "Downloads" tab in My account.
+add_filter('woocommerce_account_menu_items', function ($items) {
+	unset($items['downloads']);
+	return $items;
 });
 
 /* ------------------------------------------------------------------ misc */

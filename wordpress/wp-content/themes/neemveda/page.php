@@ -11,7 +11,8 @@ while (have_posts()) :
 	the_post();
 	$nv_content = get_the_content();
 	$nv_is_woo = function_exists('is_cart') && (is_cart() || is_checkout() || is_account_page());
-	$nv_full = (bool) preg_match('/^\s*(<!--.*?-->\s*)*<section/s', $nv_content);
+	// Content with its own <section> blocks or its own container (e.g. About, Contact) is shown full width.
+	$nv_full = (bool) preg_match('/^\s*(<!--.*?-->\s*)*<(section|div class="container)/s', $nv_content);
 	?>
 	<section class="page-hero<?php echo $nv_is_woo ? ' page-hero--compact' : ''; ?>" aria-labelledby="page-title">
 		<svg class="deco-leaf" aria-hidden="true"><use href="#i-neem-leaf"/></svg>

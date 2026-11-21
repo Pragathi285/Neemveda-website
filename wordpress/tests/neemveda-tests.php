@@ -450,6 +450,21 @@ nvt_ok(strpos(do_shortcode('[neemveda_contact]'), 'action" value="nv_contact"') 
 nvt_ok(nvc_push_order($order, 'x', 'y') === false, 'Push does nothing until OneSignal is set up (no errors)');
 nvt_ok(!empty(nv_socials()['instagram']) && !empty(nv_socials()['youtube']), 'Instagram and YouTube links are set');
 
+
+/* ================================================================== 11. security */
+nvt_section('Security');
+wp_set_current_user(0);
+$routes = rest_get_server()->get_routes();
+nvt_ok(!isset($routes['/wp/v2/users']), 'Visitors cannot list users through the REST API');
+nvt_ok(apply_filters('xmlrpc_enabled', true) === false, 'XML-RPC is off');
+nvt_ok(get_author_posts_url(1) === home_url('/'), 'Author links do not reveal usernames');
+$_SERVER['REMOTE_ADDR'] = '203.0.113.' . wp_rand(10, 250);
+for ($i = 0; $i < 8; $i++) do_action('wp_login_failed', 'nobody');
+$r = apply_filters('authenticate', null, 'nobody', 'x');
+nvt_ok(is_wp_error($r) && $r->get_error_code() === 'nvc_locked', 'Logins are locked after 8 wrong attempts');
+delete_transient(nvc_login_key());
+nvt_ok(apply_filters('authenticate', null, 'nobody', 'x') === null, 'Lock clears after reset');
+
 /* ================================================================== cleanup */
 nvt_section('Cleanup');
 foreach (array_reverse($GLOBALS['nvt']['cleanup']) as $id) {
