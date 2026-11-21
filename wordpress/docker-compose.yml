@@ -24,7 +24,7 @@ services:
       retries: 10
 
   wordpress:
-    image: wordpress:6.8-php8.3-apache
+    image: wordpress:7.0-php8.3-apache
     container_name: neemveda-wp
     restart: unless-stopped
     depends_on:
@@ -73,6 +73,13 @@ services:
       WORDPRESS_DB_NAME: neemveda
       WORDPRESS_DB_USER: neemveda
       WORDPRESS_DB_PASSWORD: ${DB_PASSWORD}
+      NV_SMTP_HOST: ${SMTP_HOST:-smtp-relay.brevo.com}
+      NV_SMTP_PORT: ${SMTP_PORT:-587}
+      NV_SMTP_USER: ${SMTP_USER:-}
+      NV_SMTP_PASS: ${SMTP_PASS:-}
+      NV_SMTP_SECURE: ${SMTP_SECURE:-tls}
+      NV_MAIL_FROM: ${MAIL_FROM:-neemveda0@gmail.com}
+      NV_MAIL_FROM_NAME: ${MAIL_FROM_NAME:-neemveda}
     volumes:
       - wp:/var/www/html
       - ./wp-content/themes/neemveda:/var/www/html/wp-content/themes/neemveda:ro
