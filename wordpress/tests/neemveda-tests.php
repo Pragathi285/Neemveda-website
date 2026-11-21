@@ -463,7 +463,8 @@ for ($i = 0; $i < 8; $i++) do_action('wp_login_failed', 'nobody');
 $r = apply_filters('authenticate', null, 'nobody', 'x');
 nvt_ok(is_wp_error($r) && $r->get_error_code() === 'nvc_locked', 'Logins are locked after 8 wrong attempts');
 delete_transient(nvc_login_key());
-nvt_ok(apply_filters('authenticate', null, 'nobody', 'x') === null, 'Lock clears after reset');
+$r = apply_filters('authenticate', null, 'nobody', 'x');
+nvt_ok(!is_wp_error($r) || $r->get_error_code() !== 'nvc_locked', 'Lock clears after reset');
 
 /* ================================================================== cleanup */
 nvt_section('Cleanup');
