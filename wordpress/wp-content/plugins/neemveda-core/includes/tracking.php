@@ -120,7 +120,8 @@ function nvc_tracking_box($post_or_order) {
 }
 
 // Runs before WooCommerce applies the status change (priority 40), so status emails already include these details.
-add_action('woocommerce_process_shop_order_meta', function ($order_id) {
+add_action('woocommerce_process_shop_order_meta', 'nvc_save_tracking_box', 30);
+function nvc_save_tracking_box($order_id) {
 	if (!isset($_POST['nvc_tracking_nonce']) || !wp_verify_nonce($_POST['nvc_tracking_nonce'], 'nvc_tracking')) return;
 	$order = wc_get_order($order_id);
 	if (!$order) return;
@@ -156,7 +157,7 @@ add_action('woocommerce_process_shop_order_meta', function ($order_id) {
 		if ($expected && $expected !== $old_expected) nvc_notify_customer($order, 'expected');
 		elseif ($place) nvc_notify_customer($order, 'location');
 	}
-}, 30);
+}
 
 /* ------------------------------------------------------------------ status changes */
 add_action('woocommerce_order_status_changed', function ($order_id, $from, $to, $order) {
@@ -355,7 +356,7 @@ add_shortcode('neemveda_track', function () {
 		} else {
 			$candidate = wc_get_order(absint(preg_replace('/\D+/', '', $num)));
 			$phone = function_exists('nvc_normalise_phone') ? nvc_normalise_phone($who) : '';
-			if ($candidate && (strcasecmp($candidate->get_billing_email(), $who) === 0 || ($phone && nvc_normalise_phone($candidate->get_billing_phone()) === $phone))) {
+			if ($candidate instanceof WC_Order && (strcasecmp($candidate->get_billing_email(), $who) === 0 || ($phone && nvc_normalise_phone($candidate->get_billing_phone()) === $phone))) {
 				$order = $candidate;
 			} else {
 				$error = __('We could not find an order with that number and email / mobile number.', 'neemveda');
@@ -363,7 +364,7 @@ add_shortcode('neemveda_track', function () {
 		}
 	} elseif ($num !== '' && is_user_logged_in()) {
 		$candidate = wc_get_order(absint(preg_replace('/\D+/', '', $num)));
-		if ($candidate && (int) $candidate->get_customer_id() === get_current_user_id()) $order = $candidate;
+		if ($candidate instanceof WC_Order && (int) $candidate->get_customer_id() === get_current_user_id()) $order = $candidate;
 	}
 
 	if (is_user_logged_in()) {
