@@ -1,0 +1,88 @@
+# neemveda WordPress + WooCommerce.
+#   cp .env.example .env   (fill in passwords)   then:   docker compose up -d
+# Traefik (on the shared "docker_default" network) routes the domain to the "neemveda-wp" container.
+# The theme and plugin come from this repository (mounted read-only); WordPress core, WooCommerce and
+# uploads live in the "wp" volume, the database in the "db" volume.
+name: neemveda
+
+services:
+  db:
+    image: mariadb:11.4
+    container_name: neemveda-db
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: neemveda
+      MARIADB_USER: neemveda
+      MARIADB_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in .env}
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?set DB_ROOT_PASSWORD in .env}
+    volumes:
+      - db:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  wordpress:
+    image: wordpress:6.8-php8.3-apache
+    container_name: neemveda-wp
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_NAME: neemveda
+      WORDPRESS_DB_USER: neemveda
+      WORDPRESS_DB_PASSWORD: ${DB_PASSWORD}
+      NV_SMTP_HOST: ${SMTP_HOST:-smtp-relay.brevo.com}
+      NV_SMTP_PORT: ${SMTP_PORT:-587}
+      NV_SMTP_USER: ${SMTP_USER:-}
+      NV_SMTP_PASS: ${SMTP_PASS:-}
+      NV_SMTP_SECURE: ${SMTP_SECURE:-tls}
+      NV_MAIL_FROM: ${MAIL_FROM:-neemveda0@gmail.com}
+      NV_MAIL_FROM_NAME: ${MAIL_FROM_NAME:-neemveda}
+      WORDPRESS_CONFIG_EXTRA: |
+        /* Behind the Traefik proxy: trust its HTTPS header. */
+        if (($$_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https') { $$_SERVER['HTTPS'] = 'on'; }
+        define('FORCE_SSL_ADMIN', true);
+        define('DISALLOW_FILE_EDIT', true);
+        define('WP_MEMORY_LIMIT', '256M');
+        define('WP_POST_REVISIONS', 10);
+        foreach (['NV_SMTP_HOST','NV_SMTP_PORT','NV_SMTP_USER','NV_SMTP_PASS','NV_SMTP_SECURE','NV_MAIL_FROM','NV_MAIL_FROM_NAME'] as $$nv_k) {
+          if (!defined($$nv_k) && getenv($$nv_k) !== false) define($$nv_k, getenv($$nv_k));
+        }
+    volumes:
+      - wp:/var/www/html
+      - ./wp-content/themes/neemveda:/var/www/html/wp-content/themes/neemveda:ro
+      - ./wp-content/plugins/neemveda-core:/var/www/html/wp-content/plugins/neemveda-core:ro
+      - ./php-uploads.ini:/usr/local/etc/php/conf.d/neemveda.ini:ro
+    networks:
+      - default
+      - proxy
+
+  # One-off admin tasks:  docker compose run --rm cli wp <command>
+  cli:
+    image: wordpress:cli-2.12-php8.3
+    profiles: ["cli"]
+    user: "33:33"
+    depends_on:
+      - wordpress
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_NAME: neemveda
+      WORDPRESS_DB_USER: neemveda
+      WORDPRESS_DB_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - wp:/var/www/html
+      - ./wp-content/themes/neemveda:/var/www/html/wp-content/themes/neemveda:ro
+      - ./wp-content/plugins/neemveda-core:/var/www/html/wp-content/plugins/neemveda-core:ro
+
+volumes:
+  db:
+  wp:
+
+networks:
+  proxy:
+    name: docker_default
+    external: true

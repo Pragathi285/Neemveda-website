@@ -1,0 +1,30 @@
+{
+ "about": {
+  "title": "About",
+  "excerpt": "We bring back the traditional Indian practice of the datun, with the natural goodness of neem and none of the plastic."
+ },
+ "credits": {
+  "title": "Photo credits",
+  "excerpt": "Some photographs on this website come from Pixabay. We're grateful to the photographer."
+ },
+ "privacy-policy": {
+  "title": "Privacy policy",
+  "excerpt": ""
+ },
+ "refund-policy": {
+  "title": "Refund policy",
+  "excerpt": ""
+ },
+ "shipping-policy": {
+  "title": "Shipping policy",
+  "excerpt": ""
+ },
+ "contact": {
+  "title": "Contact",
+  "excerpt": "Questions about using neem sticks, your order, or bulk and gifting enquiries? Write to us. A real person will reply."
+ },
+ "track-order": {
+  "title": "Track your order",
+  "excerpt": "Enter your order number and the email or mobile number you used. Logged-in customers see their orders here too."
+ }
+}

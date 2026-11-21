@@ -1,3 +1,43 @@
+# neemveda – WordPress + WooCommerce shop
+
+**The live shop runs on WordPress + WooCommerce** (folder [`wordpress/`](wordpress)). The Node.js site further down this file is the earlier version, kept for reference.
+
+## What's where
+| Part | Where |
+|---|---|
+| Theme (design, home page, shop/cart/checkout styling) | `wordpress/wp-content/themes/neemveda` |
+| neemveda features plugin | `wordpress/wp-content/plugins/neemveda-core` |
+| Server setup (WordPress + MariaDB in Docker, behind Traefik) | `wordpress/docker-compose.yml`, `wordpress/.env.example` |
+
+**WooCommerce** gives: products, cart, checkout, **Cash on Delivery**, customer **sign up / log in**, **order history** (My account → Orders), stock, coupons, reports, order emails.
+**neemveda-core** adds:
+- **OTP verification** – email OTP at sign up (always on); phone/SMS OTP at sign up and checkout once MSG91 or 2Factor is filled in (WooCommerce → neemveda settings). Login is required to order, so every order belongs to a verified customer.
+- **Delivery location pin** – a map at checkout (OpenStreetMap); the pin shows on the admin order page and in the new-order email with a Google Maps link.
+- **Order tracking** – statuses Confirmed → Packed → Shipped → Out for delivery → Delivered, courier / tracking number / link, expected delivery date and location updates on the order page; emails at each step, a reminder the day before delivery, a timeline in My account and a **Track order** page.
+- **Notifications** – admin new-order alerts (sound + browser notification + "New orders" badge), browser push to customers via OneSignal (add App ID + REST key in settings), and an **announcement bar**.
+- Contact form (messages under WooCommerce → Messages), newsletter list, "Buy now".
+
+Contact email and social links: Appearance → Customize → *neemveda: contact & social*.
+
+## Run on a server
+```bash
+cd wordpress && cp .env.example .env   # fill in DB passwords and the Brevo SMTP key
+docker compose up -d
+docker compose run --rm cli wp core install --url=https://YOUR-DOMAIN --title=neemveda --admin_user=ADMIN --admin_email=EMAIL --prompt=admin_password
+docker compose run --rm cli wp plugin install woocommerce --activate
+docker compose run --rm cli wp plugin activate neemveda-core
+docker compose run --rm cli wp theme activate neemveda
+docker compose run --rm cli wp neemveda setup --admin-email=EMAIL
+```
+`wp neemveda setup` creates the pages, the 3 neem stick packs (sample prices – change them in Products), Cash on Delivery, ₹50 delivery (free from ₹499) and the account settings. It is safe to run again.
+
+## Moving to another domain
+```bash
+docker compose run --rm cli wp search-replace https://OLD-DOMAIN https://NEW-DOMAIN --all-tables
+```
+
+---
+
 # neemveda – Natural Oral Care website
 
 Mobile-first shop with a small Node.js backend: Razorpay payments (UPI, cards, netbanking), Cash on Delivery, saved orders, email alerts, newsletter and contact form, and a password-protected admin page.
