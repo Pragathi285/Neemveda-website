@@ -1,0 +1,46 @@
+# neemveda WordPress container neemveda-wp (/opt/neemveda/wordpress, docker compose).
+# The shop now lives at https://neemveda.in (routes in neemveda-in.yml).
+# The old address neemveda.indobase.in permanently redirects there, keeping path and query;
+# it keeps its own Let's Encrypt certificate so https://neemveda.indobase.in/... redirects without warnings.
+http:
+  routers:
+    neemveda-http:
+      rule: Host(`neemveda.indobase.in`)
+      priority: 250
+      middlewares:
+        - neemveda-old-domain
+      service: neemveda
+      entryPoints:
+        - web
+    neemveda-https:
+      rule: Host(`neemveda.indobase.in`)
+      priority: 250
+      middlewares:
+        - neemveda-old-domain
+      service: neemveda
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: letsencrypt
+  middlewares:
+    neemveda-old-domain:
+      redirectRegex:
+        regex: "^https?://neemveda\\.indobase\\.in(.*)"
+        replacement: "https://neemveda.in${1}"
+        permanent: true
+    neemveda-headers:
+      headers:
+        stsSeconds: 15552000
+        contentTypeNosniff: true
+        customFrameOptionsValue: SAMEORIGIN
+        referrerPolicy: strict-origin-when-cross-origin
+        permissionsPolicy: "camera=(), microphone=(), payment=(), geolocation=(self)"
+        customResponseHeaders:
+          Server: ""
+          X-Powered-By: ""
+  services:
+    neemveda:
+      loadBalancer:
+        passHostHeader: true
+        servers:
+          - url: http://neemveda-wp:80

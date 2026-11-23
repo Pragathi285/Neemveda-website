@@ -1,0 +1,7 @@
+# neemveda (neemveda.in): WordPress jobs + order backup every 5 minutes, full backup nightly at 02:15.
+# Backups go to /var/backups/neemveda-*, kept 14 days. Log: /var/log/neemveda-ops.log
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+*/5 * * * * root cd /opt/neemveda/wordpress && docker compose run --rm --no-deps -T cli wp cron event run --due-now </dev/null 2>&1 | grep -vE "Container .* (Creating|Created|Starting|Started)" >>/var/log/neemveda-ops.log || true
+15 2 * * * root /opt/neemveda-ops/backup.sh >>/var/log/neemveda-ops.log 2>&1
+*/5 * * * * root /opt/neemveda-ops/orders-backup.sh >>/var/log/neemveda-ops.log 2>&1

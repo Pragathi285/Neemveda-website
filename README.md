@@ -63,6 +63,17 @@ Server (run once):
 - [ ] **Updates**: before updating WordPress / WooCommerce, take a backup; keep a note of the git commit that's live so you can roll back.
 - [ ] After going live: submit `https://YOUR-DOMAIN/wp-sitemap.xml` in Google Search Console.
 
+## Server operations (`wordpress/ops/`)
+What runs on the live server (neemveda.in on 103.190.92.248), kept here so a new server can be set up the same way:
+| File | Installed at | What it does |
+|---|---|---|
+| `ops/orders-backup.sh` | `/opt/neemveda-ops/` | **Every 5 minutes**: if any order or customer data changed, saves the order tables to `/var/backups/neemveda-orders/orders-DATE_TIME.sql.gz` (kept 7 days) and `orders-latest.csv` (opens in Excel) |
+| `ops/backup.sh` | `/opt/neemveda-ops/` | **Nightly 02:15**: full database + uploaded files to `/var/backups/neemveda-*`, kept 14 days |
+| `ops/neemveda.cron` | `/etc/cron.d/neemveda` | Runs both, plus WordPress scheduled jobs every 5 minutes |
+| `ops/traefik/neemveda-in.yml`, `ops/traefik/neemveda.yml` | Traefik dynamic config folder | `neemveda.in` (www and http redirect to it) with security headers; `neemveda.indobase.in` redirects to `neemveda.in` |
+
+Log: `/var/log/neemveda-ops.log`. **These backups are on the same server**; also copy them somewhere else (another server or cloud storage) so a server failure can't take the backups with it.
+
 ## Checking the shop
 `wordpress/tests/neemveda-tests.php` checks setup, OTP, sign up, checkout, emails, tracking and security (it cleans up after itself):
 ```bash

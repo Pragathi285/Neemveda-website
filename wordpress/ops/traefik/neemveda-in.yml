@@ -1,0 +1,41 @@
+# neemveda.in + www.neemveda.in -> same WordPress container as neemveda.indobase.in (service "neemveda" in neemveda.yml).
+#   http://neemveda.in/*        -> 301 https://neemveda.in/*
+#   http(s)://www.neemveda.in/* -> 301 https://neemveda.in/*   (path and query kept)
+#   https://neemveda.in/*       -> WordPress, with the neemveda security headers
+# Certificates: Let's Encrypt (resolver "letsencrypt"), issued once DNS for both names points to this server.
+http:
+  routers:
+    neemveda-in-http:
+      rule: Host(`neemveda.in`) || Host(`www.neemveda.in`)
+      priority: 250
+      middlewares:
+        - neemveda-in-canonical
+      service: neemveda
+      entryPoints:
+        - web
+    neemveda-in-https:
+      rule: Host(`neemveda.in`)
+      priority: 250
+      middlewares:
+        - neemveda-headers
+      service: neemveda
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: letsencrypt
+    neemveda-www-https:
+      rule: Host(`www.neemveda.in`)
+      priority: 250
+      middlewares:
+        - neemveda-in-canonical
+      service: neemveda
+      entryPoints:
+        - websecure
+      tls:
+        certResolver: letsencrypt
+  middlewares:
+    neemveda-in-canonical:
+      redirectRegex:
+        regex: "^https?://(?:www\\.)?neemveda\\.in(.*)"
+        replacement: "https://neemveda.in${1}"
+        permanent: true
