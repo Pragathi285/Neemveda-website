@@ -45,6 +45,7 @@ $nv_featured = nv_featured_product();
 				['Shipping policy', nv_page_url('shipping-policy', '/shipping-policy/')],
 				['Refund policy', nv_page_url('refund-policy', '/refund-policy/')],
 				['Privacy policy', nv_page_url('privacy-policy', '/privacy-policy/')],
+				['Terms & conditions', nv_page_url('terms', '/terms/')],
 				['Photo credits', nv_page_url('credits', '/credits/')],
 				['Contact us', nv_page_url('contact', '/contact/')],
 			]); ?>

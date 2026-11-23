@@ -209,6 +209,99 @@ add_filter('woocommerce_account_menu_items', function ($items) {
 	return $items;
 });
 
+/* ------------------------------------------------------------------ search & sharing tags */
+// Meta description, Open Graph (WhatsApp / Facebook previews) and Twitter card tags.
+// Skipped automatically if an SEO plugin (Yoast, Rank Math, AIOSEO, SEOPress) is installed.
+function nv_seo_plugin_active() {
+	return defined('WPSEO_VERSION') || defined('RANK_MATH_VERSION') || defined('AIOSEO_VERSION') || defined('SEOPRESS_VERSION');
+}
+
+function nv_clip($text, $len = 158) {
+	$text = trim(preg_replace('/\s+/', ' ', wp_strip_all_tags(strip_shortcodes((string) $text))));
+	if (mb_strlen($text) <= $len) return $text;
+	$cut = mb_substr($text, 0, $len);
+	$space = mb_strrpos($cut, ' ');
+	return rtrim($space ? mb_substr($cut, 0, $space) : $cut, ' ,.;:–-') . '…';
+}
+
+function nv_meta_data() {
+	$default = __('Natural neem sticks (datun): a plastic-free, chemical-free traditional toothbrush. Cash on Delivery across India.', 'neemveda');
+	$d = [
+		'title' => wp_get_document_title(),
+		'desc'  => $default,
+		'image' => nv_asset('img/og-image.jpg'),
+		'url'   => home_url('/'),
+		'type'  => 'website',
+	];
+	if (is_front_page()) {
+		$d['url'] = home_url('/');
+	} elseif (function_exists('is_product') && is_product()) {
+		$product = wc_get_product(get_queried_object_id());
+		if ($product) {
+			$d['desc'] = nv_clip($product->get_short_description() ?: $product->get_description()) ?: $default;
+			$img = wp_get_attachment_image_url($product->get_image_id(), 'large');
+			if ($img) $d['image'] = $img;
+			$d['url'] = get_permalink($product->get_id());
+			$d['type'] = 'product';
+			$d['price'] = $product->get_price();
+		}
+	} elseif (function_exists('is_shop') && is_shop()) {
+		$d['desc'] = __('Shop natural neem sticks (datun) in packs of 10, 30 and 60. Plastic-free oral care, Cash on Delivery across India.', 'neemveda');
+		$d['url'] = wc_get_page_permalink('shop');
+	} elseif (is_tax() || is_category() || is_tag()) {
+		$term = get_queried_object();
+		$d['desc'] = nv_clip(term_description()) ?: $default;
+		$d['url'] = get_term_link($term);
+	} elseif (is_singular()) {
+		$post = get_queried_object();
+		$d['desc'] = nv_clip(has_excerpt($post) ? $post->post_excerpt : $post->post_content) ?: $default;
+		$img = get_the_post_thumbnail_url($post, 'large');
+		if ($img) $d['image'] = $img;
+		$d['url'] = get_permalink($post);
+	}
+	return $d;
+}
+
+add_action('wp_head', function () {
+	if (nv_seo_plugin_active() || is_404() || is_search()) return;
+	$d = nv_meta_data();
+	$tags = [
+		['name', 'description', $d['desc']],
+		['property', 'og:site_name', 'neemveda'],
+		['property', 'og:locale', 'en_IN'],
+		['property', 'og:type', $d['type'] === 'product' ? 'product' : 'website'],
+		['property', 'og:title', $d['title']],
+		['property', 'og:description', $d['desc']],
+		['property', 'og:url', $d['url']],
+		['property', 'og:image', $d['image']],
+		['name', 'twitter:card', 'summary_large_image'],
+		['name', 'twitter:title', $d['title']],
+		['name', 'twitter:description', $d['desc']],
+		['name', 'twitter:image', $d['image']],
+	];
+	if (!empty($d['price'])) {
+		$tags[] = ['property', 'product:price:amount', $d['price']];
+		$tags[] = ['property', 'product:price:currency', 'INR'];
+	}
+	foreach ($tags as [$attr, $key, $value]) {
+		if ($value === '' || $value === null) continue;
+		$v = in_array($key, ['og:url', 'og:image', 'twitter:image'], true) ? esc_url($value) : esc_attr($value);
+		echo '<meta ' . $attr . '="' . esc_attr($key) . '" content="' . $v . '">' . "\n";
+	}
+	// WordPress adds canonical links to single pages; add them to the shop and category pages too.
+	if ((function_exists('is_shop') && is_shop()) || is_tax() || is_category() || is_tag()) {
+		$paged = max(1, (int) get_query_var('paged'));
+		$url = $paged > 1 ? trailingslashit($d['url']) . 'page/' . $paged . '/' : $d['url'];
+		echo '<link rel="canonical" href="' . esc_url($url) . '">' . "\n";
+	}
+}, 3);
+
+// Pages that shouldn't show up in Google.
+add_filter('wp_robots', function ($robots) {
+	if (function_exists('is_cart') && (is_cart() || is_checkout() || is_account_page())) $robots['noindex'] = true;
+	return $robots;
+});
+
 /* ------------------------------------------------------------------ misc */
 add_filter('body_class', function ($classes) {
 	if (is_front_page()) $classes[] = 'page-home';

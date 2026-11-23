@@ -29,6 +29,7 @@ require_once NVC_DIR . 'includes/settings.php';
 require_once NVC_DIR . 'includes/mail.php';
 require_once NVC_DIR . 'includes/sms.php';
 require_once NVC_DIR . 'includes/otp.php';
+require_once NVC_DIR . 'includes/welcome.php';
 require_once NVC_DIR . 'includes/location.php';
 require_once NVC_DIR . 'includes/tracking.php';
 require_once NVC_DIR . 'includes/alerts.php';

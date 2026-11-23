@@ -196,13 +196,30 @@ function nvc_track_url($order) {
 	return add_query_arg(['order' => $order->get_order_number()], $base);
 }
 
+/** [min, max] whole numbers from text like "3–7" or "2". */
+function nvc_day_range($text, $fallback) {
+	preg_match_all('/\d+/', (string) $text, $m);
+	if (empty($m[0])) return $fallback;
+	return [(int) $m[0][0], (int) ($m[0][1] ?? $m[0][0])];
+}
+
+/** Timestamp $n working days (Monday–Saturday; Sundays skipped) after $from. */
+function nvc_add_working_days($from, $n) {
+	$t = $from;
+	while ($n > 0) {
+		$t += DAY_IN_SECONDS;
+		if (wp_date('N', $t) !== '7') $n--;
+	}
+	return $t;
+}
+
+/** Expected delivery window: dispatch days + delivery days, both counted in working days (as in the shipping policy). */
 function nvc_estimate_text($order) {
-	$days = get_theme_mod('nv_delivery_days', '3–7');
-	preg_match_all('/\d+/', (string) $days, $m);
-	if (empty($m[0])) return '';
+	[$d1, $d2] = nvc_day_range(get_theme_mod('nv_dispatch_days', '1–2'), [1, 2]);
+	[$v1, $v2] = nvc_day_range(get_theme_mod('nv_delivery_days', '3–7'), [3, 7]);
 	$created = $order->get_date_created() ? $order->get_date_created()->getTimestamp() : time();
-	$from = wp_date('D, j M', $created + (int) $m[0][0] * DAY_IN_SECONDS);
-	$to = wp_date('D, j M', $created + (int) ($m[0][1] ?? $m[0][0]) * DAY_IN_SECONDS);
+	$from = wp_date('D, j M', nvc_add_working_days($created, $d1 + $v1));
+	$to = wp_date('D, j M', nvc_add_working_days($created, $d2 + $v2));
 	return $from === $to ? $from : $from . ' – ' . $to;
 }
 
@@ -381,7 +398,7 @@ add_shortcode('neemveda_track', function () {
 		echo nvc_render_tracking($order); // phpcs:ignore WordPress.Security.EscapeOutput
 	}
 	if (!$order || $error) : ?>
-		<form class="nv-track-form" method="get">
+		<form class="nv-track-form" method="post"><?php // POST keeps the email / mobile number out of the address bar, history and server logs. ?>
 			<?php if ($error) : ?><p class="woocommerce-error" role="alert"><?php echo esc_html($error); ?></p><?php endif; ?>
 			<label for="nv_t_order"><?php esc_html_e('Order number', 'neemveda'); ?></label>
 			<input class="input" id="nv_t_order" name="order" value="<?php echo esc_attr($num); ?>" placeholder="e.g. 1024" required>

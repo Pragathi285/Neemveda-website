@@ -113,7 +113,14 @@ nvt_ok(is_plugin_active('woocommerce/woocommerce.php'), 'WooCommerce is active')
 nvt_ok(is_plugin_active('neemveda-core/neemveda-core.php'), 'neemveda-core is active');
 nvt_ok(get_stylesheet() === 'neemveda', 'neemveda theme is active');
 nvt_ok(get_option('woocommerce_currency') === 'INR', 'Currency is INR');
-nvt_ok(get_option('woocommerce_enable_guest_checkout') === 'no', 'Guest checkout is off (login needed to order)');
+nvt_ok(get_option('woocommerce_enable_guest_checkout') === (nvc_get('nv_guest_checkout') ? 'yes' : 'no'), 'Guest checkout follows neemveda settings → Accounts');
+$nvt_guest_before = get_option('nv_guest_checkout');
+update_option('nv_guest_checkout', '');
+nvt_ok(get_option('woocommerce_enable_guest_checkout') === 'no', 'Turning the setting off makes login needed to order');
+update_option('nv_guest_checkout', '1');
+nvt_ok(get_option('woocommerce_enable_guest_checkout') === 'yes', 'Turning it on lets guests order');
+if ($nvt_guest_before === false) delete_option('nv_guest_checkout'); else update_option('nv_guest_checkout', $nvt_guest_before);
+nvt_ok(function_exists('nvc_welcome_on_this_page'), 'Welcome popup (create profile / continue as guest) is loaded');
 nvt_ok(get_option('woocommerce_enable_myaccount_registration') === 'yes', 'Sign up on My account is on');
 $cod = get_option('woocommerce_cod_settings', []);
 nvt_ok(($cod['enabled'] ?? '') === 'yes', 'Cash on Delivery is enabled');
@@ -130,7 +137,8 @@ foreach (WC_Shipping_Zones::get_zones() as $z) {
 nvt_ok($flat && (string) $flat->get_option('cost') === '50', 'Delivery charge is ₹50');
 nvt_ok($free && (string) $free->get_option('min_amount') === (string) get_option('nv_free_shipping_min', 499), 'Free delivery minimum matches the setting', $free ? $free->get_option('min_amount') : 'missing');
 
-foreach (['about', 'contact', 'track-order', 'shipping-policy', 'refund-policy', 'privacy-policy', 'credits', 'cart', 'checkout', 'my-account', 'shop', 'home'] as $slug) {
+nvt_ok((int) get_option('woocommerce_terms_page_id') === (int) (get_page_by_path('terms')->ID ?? -1), 'Checkout “terms” box links to the Terms & conditions page');
+foreach (['about', 'contact', 'track-order', 'shipping-policy', 'refund-policy', 'privacy-policy', 'terms', 'credits', 'cart', 'checkout', 'my-account', 'shop', 'home'] as $slug) {
 	$p = get_page_by_path($slug);
 	nvt_ok($p && $p->post_status === 'publish', "Page /$slug/ is published");
 }
@@ -273,6 +281,10 @@ $errs = $run_checkout(['billing_phone' => '12', 'nv_lat' => '11.02', 'nv_lng' =>
 nvt_ok((bool) array_filter($errs, fn($e) => stripos($e, 'mobile') !== false), 'A bad mobile number at checkout is refused');
 $errs = $run_checkout(['billing_phone' => '9000000099', 'nv_lat' => '11.023813', 'nv_lng' => '76.969126']);
 nvt_ok($errs === [], 'Valid phone and pin pass the checks', implode(' | ', $errs));
+$errs = $run_checkout(['billing_phone' => '9000000099', 'nv_no_pin' => '1']);
+nvt_ok($errs === [], '“Use my address only” lets an order through without a pin', implode(' | ', $errs));
+$errs = $run_checkout(['billing_phone' => '9000000099', 'nv_no_pin' => '1', 'nv_lat' => '200', 'nv_lng' => '76.9']);
+nvt_ok((bool) array_filter($errs, fn($e) => stripos($e, 'pin') !== false), 'A broken pin is still refused even with “address only” ticked');
 nvt_clear_notices();
 
 $order = nvt_new_order(['customer_id' => $GLOBALS['nvt']['user'] ?? 0, 'email' => $email]);

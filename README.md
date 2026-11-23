@@ -11,7 +11,8 @@
 
 **WooCommerce** gives: products, cart, checkout, **Cash on Delivery**, customer **sign up / log in**, **order history** (My account → Orders), stock, coupons, reports, order emails.
 **neemveda-core** adds:
-- **OTP verification** – email OTP at sign up (always on); phone/SMS OTP at sign up and checkout once MSG91 or 2Factor is filled in (WooCommerce → neemveda settings). Login is required to order, so every order belongs to a verified customer.
+- **OTP verification** – email OTP at sign up (always on); phone/SMS OTP at sign up and checkout once MSG91 or 2Factor is filled in (WooCommerce → neemveda settings). Customers can create a profile or order as guests (WooCommerce → neemveda settings → Accounts; turn guest checkout off to require a profile).
+- **Welcome popup** – new visitors see "Create your profile" (name, mobile, email + OTP, password) or "Continue as guest". Guests aren't asked again for 30 days; it never shows to logged-in customers or on cart, checkout and My account.
 - **Delivery location pin** – a map at checkout (OpenStreetMap); the pin shows on the admin order page and in the new-order email with a Google Maps link.
 - **Order tracking** – statuses Confirmed → Packed → Shipped → Out for delivery → Delivered, courier / tracking number / link, expected delivery date and location updates on the order page; emails at each step, a reminder the day before delivery, a timeline in My account and a **Track order** page.
 - **Notifications** – admin new-order alerts (sound + browser notification + "New orders" badge), browser push to customers via OneSignal (add App ID + REST key in settings), and an **announcement bar**.
@@ -34,6 +35,38 @@ docker compose run --rm cli wp neemveda setup --admin-email=EMAIL
 ## Moving to another domain
 ```bash
 docker compose run --rm cli wp search-replace https://OLD-DOMAIN https://NEW-DOMAIN --all-tables
+```
+
+## Before going live (checklist)
+Business details only the owner can give (search the pages for `[PLACEHOLDER`):
+- [ ] **Terms & conditions** and **Privacy policy** pages: legal business name, registered address, GSTIN (if registered), grievance officer name + contact, city for jurisdiction, "last updated" date. Have them checked by a professional.
+- [ ] **Contact page / footer**: full business address (the Contact page now just says "India") – required for Indian e-commerce rules.
+- [ ] **Products**: real prices and MRP (setup uses sample prices), net quantity, and **real photos of your own packs** (the current photos are Pixabay stock).
+- [ ] **Email**: send from an address on your own domain (e.g. `orders@your-domain`), verify that domain in Brevo and add its SPF, DKIM and DMARC records. Sending "from" a @gmail.com address through Brevo lands in spam. Set `MAIL_FROM` and `SMTP_*` in `.env`, then place a test order and check the emails arrive.
+- [ ] **Phone OTP**: guest checkout + Cash on Delivery invites fake orders. Turn on SMS OTP (MSG91 or 2Factor, needs DLT registration) in neemveda settings.
+- [ ] Change the admin password to a long unique one; give staff the *Shop manager* role, not Administrator.
+
+Server (run once):
+- [ ] **Real cron** instead of visitor-triggered WP-Cron (delivery reminders and WooCommerce jobs). Add `define('DISABLE_WP_CRON', true);` to `WORDPRESS_CONFIG_EXTRA` and a host crontab line:
+  ```
+  */5 * * * * cd /opt/neemveda/wordpress && docker compose run --rm cli wp cron event run --due-now >/dev/null 2>&1
+  ```
+- [ ] **Nightly backups**, copied off the server (and test a restore once):
+  ```
+  15 2 * * * cd /opt/neemveda/wordpress && docker compose exec -T db sh -c 'mariadb-dump -uroot -p"$MARIADB_ROOT_PASSWORD" --single-transaction neemveda' | gzip > /var/backups/neemveda-db-$(date +\%F).sql.gz
+  30 2 * * * docker run --rm -v neemveda_wp:/wp:ro -v /var/backups:/out alpine tar czf /out/neemveda-files-$(date +\%F).tgz -C /wp wp-content/uploads
+  45 2 * * * find /var/backups -name 'neemveda-*' -mtime +14 -delete
+  ```
+  Restore: `gunzip -c FILE.sql.gz | docker compose exec -T db sh -c 'mariadb -uroot -p"$MARIADB_ROOT_PASSWORD" neemveda'`.
+- [ ] **Traefik**: HTTPS redirect, HSTS and security headers (`X-Content-Type-Options`, `Referrer-Policy`, `X-Frame-Options: SAMEORIGIN`) on the neemveda router.
+- [ ] **Uptime monitor** (e.g. UptimeRobot, free) on the home page and `/wp-login.php`.
+- [ ] **Updates**: before updating WordPress / WooCommerce, take a backup; keep a note of the git commit that's live so you can roll back.
+- [ ] After going live: submit `https://YOUR-DOMAIN/wp-sitemap.xml` in Google Search Console.
+
+## Checking the shop
+`wordpress/tests/neemveda-tests.php` checks setup, OTP, sign up, checkout, emails, tracking and security (it cleans up after itself):
+```bash
+docker compose run --rm -v "$PWD/tests:/tests:ro" cli wp eval-file /tests/neemveda-tests.php
 ```
 
 ---

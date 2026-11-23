@@ -16,6 +16,13 @@ function nvc_fields() {
 				'nv_announce_link_text' => ['Link text', 'text', 'Shop now'],
 			],
 		],
+		'accounts' => [
+			'title'  => 'Accounts',
+			'fields' => [
+				'nv_welcome_on'     => ['Show the "Create your profile / Continue as guest" popup to new visitors', 'checkbox', '1'],
+				'nv_guest_checkout' => ['Let customers order as guests (without a profile)', 'checkbox', '1'],
+			],
+		],
 		'shop' => [
 			'title'  => 'Shop',
 			'fields' => [
@@ -63,6 +70,9 @@ function nvc_get($key) {
 add_action('admin_menu', function () {
 	add_submenu_page('woocommerce', 'neemveda settings', 'neemveda settings', 'manage_woocommerce', 'nv-settings', 'nvc_settings_page');
 }, 60);
+
+// The settings page is open to shop managers, so let them save it too (options.php asks for manage_options by default).
+add_filter('option_page_capability_nv_settings', fn() => 'manage_woocommerce');
 
 add_action('admin_init', function () {
 	foreach (nvc_fields() as $section) {

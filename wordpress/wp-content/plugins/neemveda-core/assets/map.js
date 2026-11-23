@@ -3,7 +3,18 @@
   'use strict';
   function init() {
     var el = document.querySelector('[data-nv-map]');
-    if (!el || el.dataset.ready || !window.L) return;
+    if (!el || el.dataset.ready) return;
+    if (!window.L) {
+      // The map library didn't load (blocked or offline): let the customer order with the address alone.
+      el.style.display = 'none';
+      var locate = document.querySelector('[data-nv-locate]');
+      if (locate) locate.style.display = 'none';
+      var noPin = document.querySelector('[data-nv-no-pin]');
+      if (noPin) noPin.checked = true;
+      var st = document.querySelector('[data-nv-map-status]');
+      if (st) st.textContent = 'The map could not load, so we’ll use your address. The courier may call you for directions.';
+      return;
+    }
     el.dataset.ready = '1';
     var latIn = document.querySelector('[data-nv-lat]');
     var lngIn = document.querySelector('[data-nv-lng]');
@@ -27,6 +38,8 @@
     function save(ll) {
       latIn.value = ll.lat.toFixed(6);
       lngIn.value = ll.lng.toFixed(6);
+      var noPin = document.querySelector('[data-nv-no-pin]');
+      if (noPin) noPin.checked = false;
       say('Pinned ✓ (' + latIn.value + ', ' + lngIn.value + ')');
     }
     if (latIn.value && lngIn.value) place(L.latLng(start[0], start[1]));

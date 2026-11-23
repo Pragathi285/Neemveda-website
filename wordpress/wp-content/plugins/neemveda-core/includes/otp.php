@@ -2,10 +2,10 @@
 /**
  * OTP verification.
  *
- * Sign up (My account → Register): the customer verifies their email with a 6-digit code, and their
- * mobile number too once an SMS provider is set up. Checkout needs an account (no guest checkout),
- * so every order belongs to a verified customer. At checkout, a mobile number that hasn't been verified
- * yet must be verified (when SMS is on).
+ * Sign up (My account → Register, or the welcome popup): the customer verifies their email with a 6-digit
+ * code, and their mobile number too once an SMS provider is set up. Customers can also order as guests
+ * (neemveda settings → Accounts). At checkout, a mobile number that hasn't been verified yet must be
+ * verified (when SMS is on), for guests and logged-in customers alike.
  *
  * Codes are 6 digits, valid 10 minutes, stored hashed; 5 wrong tries per code; one send per 60 s and
  * at most 6 per hour per address, plus a per-IP limit. A successful check returns a signed token that
@@ -138,7 +138,9 @@ function nvc_ajax_otp_verify() {
 
 /* ------------------------------------------------------------------ front-end widget */
 add_action('wp_enqueue_scripts', function () {
-	if (!function_exists('is_account_page') || !(is_account_page() || is_checkout())) return;
+	if (!function_exists('is_account_page')) return;
+	$welcome = function_exists('nvc_welcome_on_this_page') && nvc_welcome_on_this_page();
+	if (!(is_account_page() || is_checkout() || $welcome)) return;
 	wp_enqueue_script('nvc-otp', NVC_URL . 'assets/otp.js', [], NVC_VERSION, ['in_footer' => true]);
 	wp_localize_script('nvc-otp', 'NVC_OTP', [
 		'ajax'  => admin_url('admin-ajax.php'),
@@ -218,12 +220,19 @@ add_action('woocommerce_created_customer', function ($user_id) {
 	update_user_meta($user_id, 'nv_email_verified', '1');
 });
 
-/* ------------------------------------------------------------------ checkout: login required, phone check */
+/* ------------------------------------------------------------------ checkout: guest or account, phone check */
 // WooCommerce prints this message escaped, so show our own box (with a button) and leave the message empty.
 add_filter('woocommerce_checkout_must_be_logged_in_message', fn() => '');
 add_action('woocommerce_before_checkout_form', function () {
 	if (is_user_logged_in()) return;
 	$url = wc_get_page_permalink('myaccount');
+	if (get_option('woocommerce_enable_guest_checkout') === 'yes') {
+		// Guests can order; just offer the profile.
+		echo '<div class="woocommerce-info nv-login-needed nv-guest-note"><p><strong>' . esc_html__('Ordering as a guest.', 'neemveda') . '</strong> ' .
+			esc_html__('Fill in your details below. Want your orders saved in one place? Create a free profile.', 'neemveda') .
+			'</p><p><a class="button" href="' . esc_url($url) . '">' . esc_html__('Log in / Create profile', 'neemveda') . '</a></p></div>';
+		return;
+	}
 	echo '<div class="woocommerce-info nv-login-needed"><p><strong>' . esc_html__('Please log in or create an account to place your order.', 'neemveda') . '</strong><br>' .
 		esc_html__('It takes a minute: verify your email with a one-time code, then you can see your order history and track every order.', 'neemveda') .
 		'</p><p><a class="button" href="' . esc_url($url) . '">' . esc_html__('Log in / Sign up', 'neemveda') . '</a></p></div>';
@@ -237,8 +246,9 @@ add_filter('woocommerce_login_redirect', $nvc_back_to_checkout, 20);
 add_filter('woocommerce_registration_redirect', $nvc_back_to_checkout, 20);
 
 add_action('woocommerce_after_checkout_billing_form', function () {
-	if (!nvc_sms_ready() || !is_user_logged_in()) return;
-	echo '<div data-nv-phone-otp-wrap data-verified="' . esc_attr(get_user_meta(get_current_user_id(), 'nv_phone_verified', true)) . '">';
+	if (!nvc_sms_ready()) return;
+	$verified = is_user_logged_in() ? get_user_meta(get_current_user_id(), 'nv_phone_verified', true) : '';
+	echo '<div data-nv-phone-otp-wrap data-verified="' . esc_attr($verified) . '">';
 	nvc_otp_widget('phone', '#billing_phone', 'checkout', __('Verify this mobile number (one-time)', 'neemveda'));
 	echo '</div>';
 }, 5);
@@ -250,7 +260,7 @@ add_action('woocommerce_checkout_process', function () {
 		return;
 	}
 	if (!nvc_sms_ready()) return;
-	$verified = get_user_meta(get_current_user_id(), 'nv_phone_verified', true);
+	$verified = is_user_logged_in() ? get_user_meta(get_current_user_id(), 'nv_phone_verified', true) : '';
 	if ($verified !== $phone && !nvc_otp_token_valid(wp_unslash($_POST['nv_phone_token'] ?? ''), 'phone', $phone)) {
 		wc_add_notice(__('Please verify your mobile number with the SMS code before placing the order.', 'neemveda'), 'error');
 	}

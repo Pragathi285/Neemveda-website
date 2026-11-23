@@ -26,7 +26,12 @@ add_action('wp_head', function () {
 		var box = document.querySelector('[data-nv-push]');
 		if (!box || !OneSignal.Notifications.isPushSupported() || OneSignal.Notifications.permission) return;
 		try { if (localStorage.getItem('nvPushDismissed')) return; } catch (e) {}
-		setTimeout(function () { box.classList.add('is-visible'); }, 8000);
+		// Wait until any popup (like the welcome "Create your profile" box) is closed, so prompts never stack.
+		function nvShowPush() {
+			if (document.querySelector('dialog[open]')) { setTimeout(nvShowPush, 4000); return; }
+			box.classList.add('is-visible');
+		}
+		setTimeout(nvShowPush, 8000);
 		box.querySelector('[data-nv-push-yes]').addEventListener('click', function () { box.classList.remove('is-visible'); OneSignal.Notifications.requestPermission(); });
 		box.querySelector('[data-nv-push-no]').addEventListener('click', function () { box.classList.remove('is-visible'); try { localStorage.setItem('nvPushDismissed', '1'); } catch (e) {} });
 	});

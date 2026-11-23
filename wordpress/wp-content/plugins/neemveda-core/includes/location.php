@@ -3,15 +3,33 @@
  * Delivery location pin. At checkout the customer drops a pin on a map (OpenStreetMap via Leaflet)
  * or taps "Use my current location". The coordinates are saved on the order and shown to the shop
  * owner on the order page and in the new-order email, with a Google Maps link for the courier.
+ *
+ * The pin is asked for, but a customer who can't use the map (it didn't load, no location access,
+ * keyboard or screen-reader use) can tick "Use my address only" and still order.
  */
 defined('ABSPATH') || exit;
 
 const NVC_LEAFLET = 'https://unpkg.com/leaflet@1.9.4/dist/';
+// Subresource integrity: the browser refuses the files if the CDN ever serves something else.
+const NVC_LEAFLET_SRI = [
+	'leaflet' => 'sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=',      // leaflet.js 1.9.4
+	'leaflet-css' => 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=',  // leaflet.css 1.9.4
+];
+
+add_filter('script_loader_tag', function ($tag, $handle) {
+	if ($handle !== 'leaflet') return $tag;
+	return str_replace(' src=', ' integrity="' . NVC_LEAFLET_SRI['leaflet'] . '" crossorigin="" src=', $tag);
+}, 10, 2);
+add_filter('style_loader_tag', function ($tag, $handle) {
+	if ($handle !== 'leaflet') return $tag;
+	return str_replace(' href=', ' integrity="' . NVC_LEAFLET_SRI['leaflet-css'] . '" crossorigin="" href=', $tag);
+}, 10, 2);
 
 add_action('wp_enqueue_scripts', function () {
 	if (!function_exists('is_checkout') || !is_checkout() || is_order_received_page()) return;
-	wp_enqueue_style('leaflet', NVC_LEAFLET . 'leaflet.css', [], '1.9.4');
-	wp_enqueue_script('leaflet', NVC_LEAFLET . 'leaflet.js', [], '1.9.4', ['in_footer' => true]);
+	// No "?ver=" on the CDN files, so the integrity hashes always match the exact file.
+	wp_enqueue_style('leaflet', NVC_LEAFLET . 'leaflet.css', [], null);
+	wp_enqueue_script('leaflet', NVC_LEAFLET . 'leaflet.js', [], null, ['in_footer' => true]);
 	wp_enqueue_script('nvc-map', NVC_URL . 'assets/map.js', ['leaflet'], NVC_VERSION, ['in_footer' => true]);
 	[$lat, $lng] = array_map('floatval', array_pad(explode(',', (string) nvc_get('nv_map_center')), 2, 0));
 	wp_localize_script('nvc-map', 'NVC_MAP', ['lat' => $lat ?: 11.0168, 'lng' => $lng ?: 76.9558]);
@@ -31,6 +49,10 @@ add_action('woocommerce_after_checkout_billing_form', function () {
 		<div class="nv-map" data-nv-map aria-label="<?php esc_attr_e('Map to pin your delivery location', 'neemveda'); ?>"></div>
 		<input type="hidden" name="nv_lat" value="<?php echo esc_attr($lat); ?>" data-nv-lat>
 		<input type="hidden" name="nv_lng" value="<?php echo esc_attr($lng); ?>" data-nv-lng>
+		<p class="nv-no-pin">
+			<label><input type="checkbox" name="nv_no_pin" value="1" data-nv-no-pin <?php checked(!empty($_POST['nv_no_pin'])); ?>>
+			<?php esc_html_e('I can’t pin my location. Use my address only (the courier may call me for directions).', 'neemveda'); ?></label>
+		</p>
 	</div>
 	<?php
 }, 20);
@@ -40,8 +62,11 @@ function nvc_valid_coords($lat, $lng) {
 }
 
 add_action('woocommerce_checkout_process', function () {
-	if (!nvc_valid_coords($_POST['nv_lat'] ?? '', $_POST['nv_lng'] ?? '')) {
-		wc_add_notice(__('Please pin your delivery location on the map.', 'neemveda'), 'error');
+	$lat = $_POST['nv_lat'] ?? '';
+	$lng = $_POST['nv_lng'] ?? '';
+	if ($lat === '' && $lng === '' && !empty($_POST['nv_no_pin'])) return; // address only, by choice
+	if (!nvc_valid_coords($lat, $lng)) {
+		wc_add_notice(__('Please pin your delivery location on the map, or tick “Use my address only”.', 'neemveda'), 'error');
 	}
 });
 

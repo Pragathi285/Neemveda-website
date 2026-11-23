@@ -40,6 +40,8 @@ class NVC_Setup_Command {
 		update_option('default_comment_status', 'closed');
 		update_option('nv_announce_on', '1');
 		update_option('nv_free_shipping_min', '499');
+		if (get_option('nv_welcome_on') === false) update_option('nv_welcome_on', '1');
+		if (get_option('nv_guest_checkout') === false) update_option('nv_guest_checkout', '1');
 		if ($alert_email) update_option('nv_alert_email', sanitize_email($alert_email));
 		foreach (['hello-world' => 'post', 'sample-page' => 'page'] as $slug => $type) {
 			$p = get_page_by_path($slug, OBJECT, $type);
@@ -59,7 +61,7 @@ class NVC_Setup_Command {
 			'woocommerce_specific_allowed_countries'           => ['IN'],
 			'woocommerce_ship_to_countries'                    => '',
 			'woocommerce_calc_taxes'                           => 'no',
-			'woocommerce_enable_guest_checkout'                => 'no',
+			'woocommerce_enable_guest_checkout'                => 'yes', // follows neemveda settings → Accounts
 			'woocommerce_enable_checkout_login_reminder'       => 'yes',
 			'woocommerce_enable_signup_and_login_from_checkout' => 'no',
 			'woocommerce_enable_myaccount_registration'        => 'yes',
@@ -138,7 +140,8 @@ class NVC_Setup_Command {
 		$theme = get_template_directory_uri();
 		$ids = [];
 		foreach ($meta as $slug => $info) {
-			$html = str_replace('{{THEME}}', $theme, file_get_contents($dir . $slug . '.html'));
+			// Site links like href="/shop/" also work when WordPress lives in a sub-folder.
+			$html = str_replace(['{{THEME}}', 'href="/'], [$theme, 'href="' . trailingslashit(home_url())], file_get_contents($dir . $slug . '.html'));
 			$ids[$slug] = $this->upsert_page($slug, $info['title'], "<!-- wp:html -->\n" . $html . "\n<!-- /wp:html -->", $info['excerpt']);
 		}
 		// WooCommerce pages with the classic shortcodes (OTP, map pin and tracking hook into these).
@@ -155,7 +158,7 @@ class NVC_Setup_Command {
 		}
 		$ids['home'] = $this->upsert_page('home', 'Home', '<!-- The home page layout is in the neemveda theme (front-page.php). -->');
 		update_option('wp_page_for_privacy_policy', $ids['privacy-policy']);
-		update_option('woocommerce_terms_page_id', $ids['refund-policy']);
+		update_option('woocommerce_terms_page_id', $ids['terms']); // the "I agree to the terms" box at checkout
 		WP_CLI::log('Pages created: ' . implode(', ', array_keys($ids)));
 		return $ids;
 	}
