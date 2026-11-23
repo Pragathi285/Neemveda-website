@@ -254,7 +254,9 @@ add_action('woocommerce_after_checkout_billing_form', function () {
 }, 5);
 
 add_action('woocommerce_checkout_process', function () {
-	$phone = nvc_normalise_phone(wp_unslash($_POST['billing_phone'] ?? ''));
+	$raw = trim((string) wp_unslash($_POST['billing_phone'] ?? ''));
+	if ($raw === '') return; // WooCommerce already says "Phone is a required field"; one message is enough.
+	$phone = nvc_normalise_phone($raw);
 	if (!$phone) {
 		wc_add_notice(__('Please enter a valid 10-digit Indian mobile number.', 'neemveda'), 'error');
 		return;
