@@ -70,7 +70,8 @@ What runs on the live server (neemveda.in on 103.190.92.248), kept here so a new
 | `ops/orders-backup.sh` | `/opt/neemveda-ops/` | **Every 5 minutes**: if any order or customer data changed, saves the order tables to `/var/backups/neemveda-orders/orders-DATE_TIME.sql.gz` (kept 7 days) and `orders-latest.csv` (opens in Excel) |
 | `ops/backup.sh` | `/opt/neemveda-ops/` | **Nightly 02:15**: full database + uploaded files to `/var/backups/neemveda-*`, kept 14 days |
 | `ops/neemveda.cron` | `/etc/cron.d/neemveda` | Runs both, plus WordPress scheduled jobs every 5 minutes |
-| `ops/traefik/neemveda-in.yml`, `ops/traefik/neemveda.yml` | Traefik dynamic config folder | `neemveda.in` (www and http redirect to it) with security headers; `neemveda.indobase.in` redirects to `neemveda.in` |
+| `ops/traefik/neemveda-in.yml`, `ops/traefik/neemveda.yml` | Traefik dynamic config folder | Routes `neemveda.in`, `www.neemveda.in` and the old `neemveda.indobase.in` to WordPress with security headers and Let's Encrypt certificates |
+| `ops/htaccess-redirects.conf` | Top of WordPress's `.htaccess` | The **301** redirects (path + query kept): `neemveda.indobase.in`, `www.neemveda.in` and `http://neemveda.in` → `https://neemveda.in`. Done in Apache because Traefik 3.3 only sends 308. |
 
 Log: `/var/log/neemveda-ops.log`. **These backups are on the same server**; also copy them somewhere else (another server or cloud storage) so a server failure can't take the backups with it.
 
