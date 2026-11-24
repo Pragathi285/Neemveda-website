@@ -32,6 +32,25 @@ add_filter('wp_mail_from_name', fn($name) => defined('NV_MAIL_FROM_NAME') ? NV_M
 add_filter('woocommerce_email_from_address', fn($from) => (defined('NV_MAIL_FROM') && NV_MAIL_FROM) ? NV_MAIL_FROM : $from);
 add_filter('woocommerce_email_from_name', fn($name) => defined('NV_MAIL_FROM_NAME') ? NV_MAIL_FROM_NAME : 'neemveda');
 
+/** The address customers write to (shown on the site): theme setting "Email shown on the website". */
+function nvc_support_email() {
+	$email = sanitize_email((string) get_theme_mod('nv_email', ''));
+	return is_email($email) ? $email : 'support@neemveda.in';
+}
+
+// Replies to any email from the shop go to the support inbox, unless the email already sets a Reply-To
+// (WooCommerce's "new order" email to the owner replies to the customer, which is kept).
+add_filter('wp_mail', function ($args) {
+	$headers = $args['headers'] ?? [];
+	$list = is_array($headers) ? $headers : preg_split('/\r?\n/', (string) $headers);
+	foreach ($list as $h) {
+		if (stripos(ltrim((string) $h), 'reply-to:') === 0) return $args;
+	}
+	$list[] = 'Reply-To: neemveda <' . nvc_support_email() . '>';
+	$args['headers'] = array_values(array_filter($list, 'strlen'));
+	return $args;
+});
+
 add_action('wp_mail_failed', function ($error) {
 	error_log('[neemveda] email failed: ' . $error->get_error_message());
 });

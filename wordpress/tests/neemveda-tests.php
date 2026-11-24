@@ -162,6 +162,11 @@ nvt_section('Email');
 nvt_ok(nvc_mail_ready(), 'SMTP (Brevo) settings are present', 'NV_SMTP_HOST / NV_SMTP_PASS');
 nvt_ok(apply_filters('wp_mail_from', 'x@x') === (defined('NV_MAIL_FROM') ? NV_MAIL_FROM : 'x@x'), 'Emails are sent from the shop address');
 nvt_ok(apply_filters('wp_mail_from_name', 'WordPress') === 'neemveda', 'Sender name is neemveda');
+$nvt_args = apply_filters('wp_mail', ['to' => 'a@example.com', 'subject' => 's', 'message' => 'm', 'headers' => ['Content-Type: text/html; charset=UTF-8'], 'attachments' => []]);
+nvt_ok((bool) preg_grep('/^Reply-To: .*<' . preg_quote(nvc_support_email(), '/') . '>$/i', (array) $nvt_args['headers']), 'Replies go to the support address (' . nvc_support_email() . ')');
+$nvt_args = apply_filters('wp_mail', ['to' => 'a@example.com', 'subject' => 's', 'message' => 'm', 'headers' => "Reply-to: Customer <c@example.com>\r\n", 'attachments' => []]);
+nvt_ok(count(preg_grep('/^reply-to:/i', (array) $nvt_args['headers'])) === 1 && (bool) preg_grep('/c@example\.com/', (array) $nvt_args['headers']), 'An email that already has a Reply-To keeps it (owner replies go to the customer)');
+nvt_ok(stripos(do_shortcode(get_post(get_page_by_path('contact')->ID)->post_content), 'support@neemveda.in') !== false, 'Contact page shows support@neemveda.in');
 
 /* ================================================================== 3. helpers */
 nvt_section('Phone numbers and tokens');

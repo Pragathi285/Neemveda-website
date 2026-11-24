@@ -59,7 +59,7 @@ add_action('wp_head', function () {
 /* ------------------------------------------------------------------ contact & social settings */
 function nv_defaults() {
 	return [
-		'email'            => 'neemveda0@gmail.com',
+		'email'            => 'support@neemveda.in',
 		'instagram'        => 'https://www.instagram.com/neemveda_official/',
 		'instagram_handle' => '@neemveda_official',
 		'youtube'          => 'https://www.youtube.com/@Neemveda',
